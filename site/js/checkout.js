@@ -402,7 +402,7 @@
     clearInterval(poll);
     // if (window.fbq) fbq("track", "Purchase", ...) — disparar ANTES de sair da página
     // Igual ao ViralFlow: vai pro /parabens criar a senha e entrar direto.
-    if (estado.pedidoId) { location.href = "/parabens?pedido=" + encodeURIComponent(estado.pedidoId); return; }
+    if (estado.email) { location.href = "/parabens?email=" + encodeURIComponent(estado.email); return; }
     const $ = (s) => el.querySelector(s);
     $("#ck-ok-email").textContent = estado.email || "informado";
     $("#ck-form").hidden = true; $("#ck-tela-pix").hidden = true; $("#ck-tela-ok").hidden = false;

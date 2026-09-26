@@ -27,7 +27,10 @@ Deno.serve(async (req) => {
     const { data: pedido } = await sb.from("pedidos")
       .select("nome").eq("email", email).eq("status", "aprovado")
       .order("criado_em", { ascending: false }).limit(1).maybeSingle();
-    if (pedido) await enviarAcesso(sb, email, pedido.nome, false);
+    if (pedido) {
+      const { data: uid } = await sb.rpc("user_id_por_email", { p_email: email });
+      await enviarAcesso(sb, email, pedido.nome, !uid);
+    }
 
     return json(RESPOSTA);
   } catch (e) {

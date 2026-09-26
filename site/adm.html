@@ -130,7 +130,7 @@ function tabelaPedidos() {
     <td>${p.itens && p.itens.padrinhos ? '<span class="pill extra">Padrinhos</span>' : ""}${p.itens && p.itens.pix ? '<span class="pill extra">Pix</span>' : ""}</td>
     <td><span class="pill ${esc(p.status)}">${esc(p.status)}</span><small>${esc(p.status_detalhe || "")}</small></td>
     <td class="num">${p.acesso_enviado_em ? dt(p.acesso_enviado_em) : (p.status === "aprovado" ? "<b style='color:var(--erro)'>não enviado</b>" : "–")}</td>
-    <td>${p.status === "aprovado" ? `<button class="acao" data-reenviar="${p.id}" type="button">Reenviar acesso</button> <button class="acao" data-parabens="${p.id}" type="button">Link do /parabens</button>` : ""}</td>
+    <td>${p.status === "aprovado" ? `<button class="acao" data-reenviar="${p.id}" type="button">Reenviar acesso</button>` : ""}</td>
   </tr>`).join("") || `<tr><td colspan="7" class="vazio">Nenhum pedido.</td></tr>`}
   </tbody></table></div>`;
 }
@@ -149,32 +149,47 @@ function tabelaConvites() {
   </tbody></table></div>`;
 }
 function formCortesia() {
-  return `<form class="form" id="f-cortesia">
-    <p style="color:var(--soft)">Libera o acesso sem pagamento (parceria, cliente que pagou por fora, troca). Cria um pedido de R$0 e manda o e-mail de acesso na hora.</p>
-    <label>Nome<input type="text" id="c-nome" required></label>
+  return `<div style="display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));align-items:start">
+  <form class="form" id="f-conta">
+    <b style="font-size:16px">Criar conta</b>
+    <p style="color:var(--soft)">Cria a conta com senha e já libera o convite. Pra cortesia, parceria, cliente que pagou por fora ou teste.</p>
+    <label>Nome<input type="text" id="c-nome"></label>
     <label>E-mail<input type="email" id="c-email" required></label>
+    <label>Senha<input type="text" id="c-senha" required minlength="6" placeholder="Mínimo 6 caracteres"></label>
     <div class="cx"><label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="c-padrinhos">Padrinhos</label><label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="c-pix">Pix</label></div>
-    <button type="submit">Liberar acesso</button>
-  </form>`;
+    <button type="submit">Criar conta</button>
+  </form>
+  <form class="form" id="f-senha">
+    <b style="font-size:16px">Trocar senha</b>
+    <p style="color:var(--soft)">Pra cliente que esqueceu a senha.</p>
+    <label>E-mail<input type="email" id="t-email" required></label>
+    <label>Nova senha<input type="text" id="t-senha" required minlength="6"></label>
+    <button type="submit">Trocar senha</button>
+  </form></div>`;
 }
-
 function pintar() {
   const corpo = aba === "pedidos" ? `<div class="barra"><input id="q" placeholder="Buscar nome, e-mail ou WhatsApp"><select id="st"><option value="">Todos os status</option><option>aprovado</option><option>pendente</option><option>recusado</option><option>estornado</option></select></div><div id="tab">${tabelaPedidos()}</div>`
     : aba === "convites" ? `<div class="barra"><input id="q" placeholder="Buscar casal ou link"></div><div id="tab">${tabelaConvites()}</div>`
     : formCortesia();
-  $("#app").innerHTML = kpis() + `<div class="abas"><button data-a="pedidos" class="${aba === "pedidos" ? "on" : ""}">Pedidos</button><button data-a="convites" class="${aba === "convites" ? "on" : ""}">Convites</button><button data-a="cortesia" class="${aba === "cortesia" ? "on" : ""}">Liberar acesso</button></div><div class="painel">${corpo}</div>`;
+  $("#app").innerHTML = kpis() + `<div class="abas"><button data-a="pedidos" class="${aba === "pedidos" ? "on" : ""}">Pedidos</button><button data-a="convites" class="${aba === "convites" ? "on" : ""}">Convites</button><button data-a="cortesia" class="${aba === "cortesia" ? "on" : ""}">Contas</button></div><div class="painel">${corpo}</div>`;
   document.querySelectorAll("[data-a]").forEach(b => b.onclick = () => { aba = b.dataset.a; pintar(); });
   const refiltrar = () => { $("#tab").innerHTML = aba === "pedidos" ? tabelaPedidos() : tabelaConvites(); ligarAcoes(); };
   if ($("#q")) $("#q").oninput = refiltrar;
   if ($("#st")) $("#st").onchange = refiltrar;
   ligarAcoes();
-  const f = $("#f-cortesia");
-  if (f) f.onsubmit = async (e) => {
+  const fc = $("#f-conta");
+  if (fc) fc.onsubmit = async (e) => {
     e.preventDefault();
     try {
-      const r = await chamarFuncao("admin", { acao: "cortesia", nome: $("#c-nome").value, email: $("#c-email").value, itens: { padrinhos: $("#c-padrinhos").checked, pix: $("#c-pix").checked } }, true);
-      toast(r.mensagem); await carregar();
+      const r = await chamarFuncao("admin", { acao: "criar_conta", nome: $("#c-nome").value, email: $("#c-email").value, senha: $("#c-senha").value, itens: { padrinhos: $("#c-padrinhos").checked, pix: $("#c-pix").checked } }, true);
+      toast(r.mensagem); aba = "pedidos"; await carregar();
     } catch (err) { toast(err.message); }
+  };
+  const fs = $("#f-senha");
+  if (fs) fs.onsubmit = async (e) => {
+    e.preventDefault();
+    try { const r = await chamarFuncao("admin", { acao: "trocar_senha", email: $("#t-email").value, senha: $("#t-senha").value }, true); toast(r.mensagem); fs.reset(); }
+    catch (err) { toast(err.message); }
   };
 }
 function ligarAcoes() {
@@ -182,12 +197,6 @@ function ligarAcoes() {
     b.disabled = true;
     try { const r = await chamarFuncao("admin", { acao: "reenviar", pedido_id: b.dataset.reenviar }, true); toast(r.mensagem); await carregar(); }
     catch (e) { toast(e.message); b.disabled = false; }
-  });
-  // Link pra pessoa criar a senha (vale enquanto ela ainda não criou). Suporte e teste.
-  document.querySelectorAll("[data-parabens]").forEach(b => b.onclick = async () => {
-    const link = location.origin + "/parabens?pedido=" + b.dataset.parabens;
-    try { await navigator.clipboard.writeText(link); toast("Link copiado. Só funciona se a pessoa ainda não criou senha."); }
-    catch (_) { prompt("Copie o link:", link); }
   });
   document.querySelectorAll("[data-publicar]").forEach(b => b.onclick = async () => {
     b.disabled = true;

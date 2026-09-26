@@ -34,6 +34,8 @@
   window.exigirLogin = async function (destino) {
     const s = await sessao();
     if (!s) { location.replace("/entrar" + (destino ? "?volta=" + encodeURIComponent(destino) : "")); return null; }
+    // Compra feita antes de criar a conta (ou de outro e-mail já cadastrado) entra aqui.
+    try { await SB.rpc("ativar_compras"); } catch (_) {}
     return s;
   };
   window.sair = async function () { await SB.auth.signOut(); location.href = "/entrar"; };

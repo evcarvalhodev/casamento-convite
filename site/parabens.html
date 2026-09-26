@@ -19,101 +19,86 @@ body { background: var(--bg); color: var(--ink); font-family: ui-sans-serif, sys
 .selo svg { width: 34px; height: 34px; }
 h1 { font-size: 23px; font-weight: 800; text-align: center; margin-top: 14px; }
 .sub { color: var(--soft); text-align: center; margin-top: 6px; }
-.passo { font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); margin-top: 24px; }
-label { display: grid; gap: 6px; font-size: 14px; font-weight: 500; color: #374151; margin-top: 12px; }
+label { display: grid; gap: 6px; font-size: 14px; font-weight: 500; color: #374151; margin-top: 14px; }
 input { width: 100%; font: inherit; font-size: 16px; color: var(--ink); background: #fff; border: 1px solid #d1d5db; border-radius: 12px; padding: 13px 14px; min-height: 50px; outline: none; -webkit-appearance: none; }
-input[readonly] { background: #f9fafb; color: var(--soft); }
 input:focus { border-color: #6b7280; box-shadow: 0 0 0 3px rgba(107,114,128,.15); }
+small { font-size: 12px; color: var(--faint); font-weight: 400; }
 .olho { position: relative; }
-.olho button { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: 0; color: var(--soft); font: 600 13px inherit; font-family: inherit; cursor: pointer; padding: 8px; }
-.btn { width: 100%; border: 0; cursor: pointer; color: #fff; font-family: inherit; font-weight: 800; font-size: 15.5px; padding: 16px; border-radius: 12px; min-height: 54px; background: linear-gradient(135deg, #16a34a, #15803d); margin-top: 18px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.olho button { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: 0; color: var(--soft); font-family: inherit; font-weight: 600; font-size: 13px; cursor: pointer; padding: 8px; }
+.btn { width: 100%; border: 0; cursor: pointer; color: #fff; font-family: inherit; font-weight: 800; font-size: 15.5px; padding: 16px; border-radius: 12px; min-height: 54px; background: linear-gradient(135deg, #16a34a, #15803d); margin-top: 20px; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
 .btn:disabled { opacity: .6; }
-.btn.escuro { background: var(--ink); }
 .erro { color: var(--erro); background: var(--erro-bg); border: 1px solid #fecdca; border-radius: 10px; padding: 10px 12px; font-size: 13.5px; margin-top: 12px; }
+.erro a { color: var(--erro); font-weight: 700; }
 .nota { font-size: 13px; color: var(--soft); text-align: center; margin-top: 16px; }
 .nota a { color: var(--ink); font-weight: 700; }
 .girando { width: 18px; height: 18px; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent; animation: gira .7s linear infinite; }
 @keyframes gira { to { transform: rotate(360deg); } }
-.espera { display: grid; justify-items: center; gap: 12px; padding: 20px 0; color: var(--soft); text-align: center; }
-.espera .girando { width: 28px; height: 28px; color: #6b7280; }
 </style>
 </head>
 <body>
 <div class="topo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6l8-3z"/></svg>Compra Segura</div>
-<div class="col"><div class="card" id="card"><div class="espera"><span class="girando"></span>Conferindo seu pagamento…</div></div></div>
+<div class="col">
+  <form class="card" id="f" novalidate>
+    <div class="selo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+    <h1>Pagamento aprovado!</h1>
+    <p class="sub">Crie sua conta pra montar o convite. Use o mesmo e-mail da compra.</p>
+    <label>Seu nome<input id="nome" type="text" autocomplete="name" placeholder="Como quer ser chamada"></label>
+    <label>E-mail da compra<input id="email" type="email" inputmode="email" autocomplete="username" placeholder="seu@email.com"></label>
+    <label>Crie uma senha<span class="olho"><input id="senha" type="password" autocomplete="new-password" placeholder="Mínimo 6 caracteres"><button type="button" id="ver">Mostrar</button></span></label>
+    <button class="btn" id="ir" type="submit">Criar conta e montar meu convite</button>
+    <p class="erro" id="erro" hidden></p>
+    <p class="nota">Já tem conta? <a href="/entrar">Entrar</a></p>
+  </form>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="/js/config.js"></script>
 <script src="/js/api.js"></script>
 <script>
+// Igual ao /parabens do ViralFlow: signUp com o e-mail da compra e a compra é
+// ligada à conta pelo e-mail (ativar_compras = activate_pending_checkout de lá).
 const $ = (s) => document.querySelector(s);
-const esc = (t) => String(t ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const pedido = new URLSearchParams(location.search).get("pedido") || "";
-const SELO = '<div class="selo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>';
+const q = new URLSearchParams(location.search);
+$("#email").value = (q.get("email") || "").trim();
+if (!$("#email").value) $("#email").focus(); else $("#nome").focus();
 
-function tela(html) { $("#card").innerHTML = html; }
+$("#ver").onclick = () => { const i = $("#senha"); i.type = i.type === "password" ? "text" : "password"; $("#ver").textContent = i.type === "password" ? "Mostrar" : "Ocultar"; };
+const erro = (html) => { $("#erro").innerHTML = html; $("#erro").hidden = !html; };
 
-function criarSenha(email) {
-  tela(`${SELO}
-    <h1>Pagamento aprovado!</h1>
-    <p class="sub">Falta um passo: crie a senha pra entrar e montar o convite de vocês.</p>
-    <form id="f" novalidate>
-      <label>Seu e-mail<input type="email" value="${esc(email)}" readonly autocomplete="username"></label>
-      <label>Crie uma senha<span class="olho"><input type="password" id="senha" minlength="6" autocomplete="new-password" placeholder="Mínimo 6 caracteres"><button type="button" id="ver">Mostrar</button></span></label>
-      <button class="btn" id="ir" type="submit">Criar senha e montar meu convite</button>
-      <p class="erro" id="erro" hidden></p>
-    </form>
-    <p class="nota">Também mandamos um link de acesso para o seu e-mail.</p>`);
-  $("#ver").onclick = () => { const i = $("#senha"); i.type = i.type === "password" ? "text" : "password"; $("#ver").textContent = i.type === "password" ? "Mostrar" : "Ocultar"; };
-  $("#f").onsubmit = async (e) => {
-    e.preventDefault();
-    const senha = $("#senha").value;
-    const erro = (t) => { $("#erro").textContent = t; $("#erro").hidden = false; };
-    if (senha.length < 6) return erro("A senha precisa ter pelo menos 6 caracteres.");
-    $("#ir").disabled = true; $("#ir").innerHTML = '<span class="girando"></span>Entrando…'; $("#erro").hidden = true;
-    try {
-      const r = await chamarFuncao("ativar-acesso", { pedido_id: pedido, senha });
-      if (r.estado === "ja_tem_senha") return jaTemSenha(email);
-      const { error } = await SB.auth.signInWithPassword({ email, password: senha });
-      if (error) throw error;
-      location.replace("/criar");
-    } catch (err) {
-      erro(err.message || "Não deu certo. Tente de novo.");
-      $("#ir").disabled = false; $("#ir").textContent = "Criar senha e montar meu convite";
+$("#f").onsubmit = async (e) => {
+  e.preventDefault();
+  const nome = $("#nome").value.trim();
+  const email = $("#email").value.trim().toLowerCase();
+  const senha = $("#senha").value;
+  erro("");
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return erro("E-mail inválido.");
+  if (senha.length < 6) return erro("A senha precisa ter pelo menos 6 caracteres.");
+  if (!window.SB) return erro("Sistema indisponível. Tente de novo em instantes.");
+
+  const btn = $("#ir");
+  btn.disabled = true; btn.innerHTML = '<span class="girando"></span>Criando sua conta…';
+  const volta = () => { btn.disabled = false; btn.textContent = "Criar conta e montar meu convite"; };
+  try {
+    const { data: comprou, error: e1 } = await SB.rpc("tem_compra", { p_email: email });
+    if (e1) throw e1;
+    if (!comprou) { volta(); return erro("Não encontramos compra aprovada com esse e-mail. Confira se é o mesmo do pagamento. No Pix, pode levar até 1 minuto pra confirmar: tente de novo em instantes."); }
+
+    const { data, error } = await SB.auth.signUp({ email, password: senha, options: { data: { nome } } });
+    if (error) {
+      volta();
+      if (/already|registered|exists/i.test(error.message)) return erro('Você já tem conta com esse e-mail. <a href="/entrar">Entre aqui</a> com a sua senha.');
+      return erro(error.message);
     }
-  };
-}
-
-function jaTemSenha(email) {
-  tela(`${SELO}
-    <h1>Pagamento aprovado!</h1>
-    <p class="sub">Você já tem conta com o e-mail <b>${esc(email)}</b>. Entre com a sua senha para montar o convite novo.</p>
-    <a class="btn escuro" href="/entrar" style="text-decoration:none">Entrar</a>`);
-}
-
-async function esperarAprovacao(email) {
-  tela(`<div class="espera"><span class="girando"></span><b style="color:var(--ink)">Esperando a confirmação do pagamento</b><span>Assim que o banco confirmar, esta tela muda sozinha.${email ? ` O acesso também vai para ${esc(email)}.` : ""}</span></div>`);
-  const fim = Date.now() + 30 * 60 * 1000;
-  while (Date.now() < fim) {
-    await new Promise(r => setTimeout(r, 5000));
-    try { const r = await chamarFuncao("ativar-acesso", { pedido_id: pedido, so_consultar: true }); if (r.estado !== "pendente") return mostrar(r); } catch (_) {}
+    if (!data.session) {
+      const { error: e2 } = await SB.auth.signInWithPassword({ email, password: senha });
+      if (e2) { volta(); return erro('Conta criada. <a href="/entrar">Entre aqui</a> com o e-mail e a senha.'); }
+    }
+    await SB.rpc("ativar_compras");
+    location.replace("/criar");
+  } catch (err) {
+    volta(); erro(err.message || "Não deu certo. Tente de novo.");
   }
-}
-
-function mostrar(r) {
-  if (r.estado === "criar_senha") return criarSenha(r.email);
-  if (r.estado === "ja_tem_senha") return jaTemSenha(r.email);
-  if (r.estado === "pendente") return esperarAprovacao(r.email);
-}
-
-(async () => {
-  if (!window.chamarFuncao || !pedido) {
-    tela(`<h1>Tudo certo por aqui</h1><p class="sub">Se você acabou de comprar, o acesso foi para o seu e-mail.</p><a class="btn escuro" href="/entrar" style="text-decoration:none">Entrar</a>`);
-    return;
-  }
-  try { mostrar(await chamarFuncao("ativar-acesso", { pedido_id: pedido, so_consultar: true })); }
-  catch (e) { tela(`<h1>Não conseguimos conferir agora</h1><p class="sub">${esc(e.message)}</p><a class="btn escuro" href="/entrar" style="text-decoration:none">Entrar com meu e-mail</a>`); }
-})();
+};
 </script>
 </body>
 </html>

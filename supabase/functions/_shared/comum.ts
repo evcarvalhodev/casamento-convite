@@ -82,23 +82,26 @@ export async function linkDeAcesso(sb: SupabaseClient, email: string, destino = 
   return data.properties.action_link;
 }
 
-async function garantirUsuario(sb: SupabaseClient, email: string, nome: string): Promise<string> {
-  const { data: criado, error } = await sb.auth.admin.createUser({
-    email,
-    email_confirm: true,
-    user_metadata: { nome },
-  });
-  if (criado?.user) return criado.user.id;
-  // Já tem conta (comprou antes): acha pelo e-mail.
-  const { data: id, error: e2 } = await sb.rpc("user_id_por_email", { p_email: email });
-  if (e2 || !id) throw new Error("não achei nem criei a conta: " + (error?.message ?? "") + " " + (e2?.message ?? ""));
-  return id as string;
+// Liga um pedido aprovado a uma conta que JÁ existe (cliente que comprou de novo,
+// ou conta criada antes pelo ADM). Conta nova NÃO é criada aqui: como no ViralFlow,
+// ela nasce no /parabens (a pessoa escolhe a senha) ou no painel ADM.
+export async function ligarAConta(sb: SupabaseClient, pedido: { id: string; email: string; itens: Record<string, boolean> }): Promise<string | null> {
+  const { data: uid } = await sb.rpc("user_id_por_email", { p_email: pedido.email });
+  if (!uid) return null;
+  await sb.from("pedidos").update({ user_id: uid }).eq("id", pedido.id);
+  const { error } = await sb.from("convites").upsert({
+    user_id: uid,
+    pedido_id: pedido.id,
+    recursos: { padrinhos: !!pedido.itens?.padrinhos, pix: !!pedido.itens?.pix },
+  }, { onConflict: "pedido_id", ignoreDuplicates: true });
+  if (error) throw new Error("convite: " + error.message);
+  return uid as string;
 }
 
 // ---- ENTREGA ----
-// Chamada quando um pedido vira "aprovado" (pelo criar-pagamento no cartão
-// aprovado na hora, ou pelo mp-webhook no Pix). Os dois podem chegar ao mesmo
-// tempo: a trava é o UPDATE ... WHERE acesso_enviado_em IS NULL — só um vence.
+// Chamada quando um pedido vira "aprovado" (criar-pagamento no cartão aprovado na
+// hora, ou mp-webhook no Pix). Os dois podem chegar juntos: a trava é o
+// UPDATE ... WHERE acesso_enviado_em IS NULL — só um vence.
 export async function entregar(sb: SupabaseClient, pedidoId: string): Promise<void> {
   const { data: pedido, error } = await sb
     .from("pedidos")
@@ -109,45 +112,37 @@ export async function entregar(sb: SupabaseClient, pedidoId: string): Promise<vo
     .select("id, nome, email, itens, valor")
     .maybeSingle();
   if (error) { console.error("entregar/trava:", error.message); return; }
-  if (!pedido) return; // outro já entregou, ou não está aprovado
+  if (!pedido) return;
 
   try {
-    const userId = await garantirUsuario(sb, pedido.email, pedido.nome);
-    await sb.from("pedidos").update({ user_id: userId }).eq("id", pedido.id);
-
-    const { error: eConv } = await sb.from("convites").upsert({
-      user_id: userId,
-      pedido_id: pedido.id,
-      recursos: { padrinhos: !!pedido.itens?.padrinhos, pix: !!pedido.itens?.pix },
-    }, { onConflict: "pedido_id", ignoreDuplicates: true });
-    if (eConv) throw new Error("convite: " + eConv.message);
-
-    await enviarAcesso(sb, pedido.email, pedido.nome, true);
+    const uid = await ligarAConta(sb, pedido);
+    await enviarAcesso(sb, pedido.email, pedido.nome, !uid);
     await avisarAdmin(pedido);
   } catch (e) {
-    // Solta a trava para o próximo webhook (ou o botão do painel ADM) tentar de novo.
     console.error("entregar falhou:", e);
     await sb.from("pedidos").update({ acesso_enviado_em: null }).eq("id", pedido.id);
   }
 }
 
-export async function enviarAcesso(sb: SupabaseClient, email: string, nome: string, primeiraVez: boolean): Promise<boolean> {
-  const link = await linkDeAcesso(sb, email);
+// semConta = true → manda criar a senha no /parabens. Senão, link que já entra logado.
+export async function enviarAcesso(sb: SupabaseClient, email: string, nome: string, semConta: boolean): Promise<boolean> {
   const primeiro = esc(String(nome || "").split(/\s+/)[0] || "");
   const oi = primeiro ? `<p>Oi, ${primeiro}!</p>` : "<p>Oi!</p>";
-  const html = primeiraVez
-    ? `${oi}
-<p>Seu pagamento foi aprovado. Para montar o convite de vocês, é só abrir este link no celular:</p>
+  if (semConta) {
+    const link = `${SITE()}/parabens?email=${encodeURIComponent(email)}`;
+    return enviarEmail(email, "Seu convite está pronto para montar", `${oi}
+<p>Seu pagamento foi aprovado. Para montar o convite de vocês, crie sua senha neste link (use este mesmo e-mail):</p>
 <p>${link}</p>
 <p>Leva uns 10 minutos: escolher o modelo, colocar os nomes, a data, as fotos e o local. No fim você recebe o link do convite pra mandar no WhatsApp.</p>
-<p>Esse link de acesso vale uma vez. Para entrar de novo depois, use ${SITE()}/entrar com este mesmo e-mail.</p>
-<p>Felicidades aos dois!<br>Pode Abrir</p>`
-    : `${oi}
+<p>Depois é só entrar em ${SITE()}/entrar com o e-mail e a senha.</p>
+<p>Felicidades aos dois!<br>Pode Abrir</p>`);
+  }
+  const link = await linkDeAcesso(sb, email);
+  return enviarEmail(email, "Seu link para entrar", `${oi}
 <p>Aqui está o seu link para entrar no Pode Abrir:</p>
 <p>${link}</p>
 <p>Ele vale uma vez. Se não foi você que pediu, pode ignorar este e-mail.</p>
-<p>Pode Abrir</p>`;
-  return enviarEmail(email, primeiraVez ? "Seu convite está pronto para montar" : "Seu link para entrar", html);
+<p>Pode Abrir</p>`);
 }
 
 async function avisarAdmin(pedido: { nome: string; email: string; itens: Record<string, boolean>; valor: number }) {

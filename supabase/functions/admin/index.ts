@@ -3,7 +3,7 @@
 // (o JWT é conferido aqui dentro, pelo e-mail — mesmo modelo do admin-panel do ViralFlow)
 
 import { createClient } from "jsr:@supabase/supabase-js@2";
-import { admins, calcularTotal, cors, entregar, enviarAcesso, env, json, limparItens, servico } from "../_shared/comum.ts";
+import { admins, cors, entregar, enviarAcesso, env, json, ligarAConta, limparItens, servico } from "../_shared/comum.ts";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors() });
@@ -48,22 +48,40 @@ Deno.serve(async (req) => {
       if (error || !p) return json({ erro: "Pedido não encontrado" }, 404);
       if (p.status !== "aprovado") return json({ erro: "Pedido não está aprovado" }, 400);
       if (!p.acesso_enviado_em) { await entregar(sb, p.id); return json({ ok: true, mensagem: "Entrega feita agora (não tinha saído)." }); }
-      const foi = await enviarAcesso(sb, p.email, p.nome, false);
+      const { data: uid } = await sb.rpc("user_id_por_email", { p_email: p.email });
+      const foi = await enviarAcesso(sb, p.email, p.nome, !uid);
       return json({ ok: foi, mensagem: foi ? "Link reenviado para " + p.email : "A Resend recusou o envio. Veja os logs." });
     }
 
-    // Libera acesso sem pagamento (cortesia, parceria, reembolso trocado etc.).
-    if (acao === "cortesia") {
+    // Cria conta com senha e já libera o convite (o "create" do painel do ViralFlow).
+    // Serve pra cortesia, parceria, cliente que pagou por fora — e pra testar.
+    if (acao === "criar_conta") {
       const email = String(body.email ?? "").trim().toLowerCase();
-      const nome = String(body.nome ?? "").trim() || email;
+      const senha = String(body.senha ?? "");
+      const nome = String(body.nome ?? "").trim();
       if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return json({ erro: "E-mail inválido" }, 400);
+      if (senha.length < 6) return json({ erro: "A senha precisa ter pelo menos 6 caracteres" }, 400);
+      const { error: eU } = await sb.auth.admin.createUser({ email, password: senha, email_confirm: true, user_metadata: { nome } });
+      if (eU) return json({ erro: /already|registered|exists/i.test(eU.message) ? "Já existe conta com esse e-mail. Use \"Trocar senha\"." : eU.message }, 400);
       const itens = limparItens(body.itens ?? {});
       const { data: p, error } = await sb.from("pedidos")
-        .insert({ nome, email, itens, valor: 0, metodo: "cortesia", status: "aprovado", status_detalhe: "liberado por " + user.email })
-        .select("id").single();
+        .insert({ nome, email, itens, valor: 0, metodo: "cortesia", status: "aprovado", status_detalhe: "conta criada por " + user.email, acesso_enviado_em: new Date().toISOString() })
+        .select("id, email, itens").single();
       if (error) return json({ erro: error.message }, 500);
-      await entregar(sb, p.id);
-      return json({ ok: true, mensagem: `Acesso liberado para ${email} (valor de tabela R$ ${calcularTotal(itens).toFixed(2)}).` });
+      await ligarAConta(sb, p);
+      return json({ ok: true, mensagem: `Conta criada: ${email}. Já pode entrar em /entrar com a senha.` });
+    }
+
+    // Troca a senha de uma conta (o "reset_password" do painel do ViralFlow).
+    if (acao === "trocar_senha") {
+      const email = String(body.email ?? "").trim().toLowerCase();
+      const senha = String(body.senha ?? "");
+      if (senha.length < 6) return json({ erro: "A senha precisa ter pelo menos 6 caracteres" }, 400);
+      const { data: uid } = await sb.rpc("user_id_por_email", { p_email: email });
+      if (!uid) return json({ erro: "Não existe conta com esse e-mail" }, 404);
+      const { error } = await sb.auth.admin.updateUserById(uid as string, { password: senha });
+      if (error) return json({ erro: error.message }, 500);
+      return json({ ok: true, mensagem: "Senha trocada para " + email });
     }
 
     // Tira do ar / coloca no ar um convite (denúncia, estorno manual etc.).
