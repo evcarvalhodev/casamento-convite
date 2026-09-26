@@ -2,7 +2,7 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/:slug([a-z0-9]+(?:-[a-z0-9]+)*)", "destination": "/convite.html" }
+    { "source": "/:slug", "destination": "/convite" }
   ],
   "headers": [
     { "source": "/(checkout|entrar|criar|painel|adm)", "headers": [{ "key": "X-Robots-Tag", "value": "noindex" }] },
