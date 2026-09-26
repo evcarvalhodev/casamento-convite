@@ -181,7 +181,7 @@ async function carregar() {
       if (matchMedia("(min-width: 1040px)").matches) { $("#previa-frame").src = linkBase; $("#previa").hidden = false; }
       const ed = (convite.dados && convite.dados.editor) || {};
       listas.convidados = ed.convidados || []; listas.padrinhos = ed.padrinhosLista || [];
-    } else $("#sub").innerHTML = 'O convite ainda não foi publicado. <a href="/criar">Terminar de montar</a>';
+    } else { location.replace("/criar"); return; } // ainda não montou: o começo é o editor
     pintar();
   } catch (e) {
     console.error(e); $("#lista").innerHTML = '<div class="vazio">Não conseguimos carregar. Toque em Atualizar.</div>';
