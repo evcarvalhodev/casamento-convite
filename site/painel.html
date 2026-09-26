@@ -6,6 +6,12 @@
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#f6f1e9">
 <title>Meu convite · Pode Abrir</title>
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/app/apple-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Pode Abrir">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -128,6 +134,7 @@ h3.secao { font-size: 13px; letter-spacing: .14em; text-transform: uppercase; co
 <script src="/js/config.js"></script>
 <script src="/js/api.js"></script>
 <script src="/js/checkout.js"></script>
+<script src="/js/instalar.js"></script>
 <script>
 const $ = (s) => document.querySelector(s);
 const esc = (t) => String(t ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -179,6 +186,7 @@ async function carregar() {
       $("#whats").href = "https://wa.me/?text=" + encodeURIComponent(`Você está convidado para o nosso casamento! 💍\nAbra o convite: ${linkBase}`);
       $("#abrir-convite").href = linkBase;
       if (matchMedia("(min-width: 1040px)").matches) { $("#previa-frame").src = linkBase; $("#previa").hidden = false; }
+      if (window.oferecerInstalar) setTimeout(oferecerInstalar, 1200); // só quem já tem convite no ar
       const ed = (convite.dados && convite.dados.editor) || {};
       listas.convidados = ed.convidados || []; listas.padrinhos = ed.padrinhosLista || [];
     } else { location.replace("/criar"); return; } // ainda não montou: o começo é o editor
