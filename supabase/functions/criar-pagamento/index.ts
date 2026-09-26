@@ -2,7 +2,8 @@
 // Deploy: supabase functions deploy criar-pagamento --no-verify-jwt
 // Base: o checkout do workshop do Vinicius, que por sua vez segue o do ViralFlow.
 
-import { PRODUTO, calcularTotal, cors, entregar, env, json, limparItens, servico, soDigitos } from "../_shared/comum.ts";
+import { createClient } from "jsr:@supabase/supabase-js@2";
+import { type Addon, PRODUTO, calcularTotal, cors, entregar, env, json, limparItens, servico, soDigitos } from "../_shared/comum.ts";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors() });
@@ -12,10 +13,28 @@ Deno.serve(async (req) => {
   let pedidoId: string | null = null;
 
   try {
-    const { comprador = {}, itens = {}, pagamento = {} } = await req.json();
+    const { comprador = {}, itens = {}, pagamento = {}, addon: addonBruto } = await req.json();
+
+    // Compra de UM bump de dentro do editor (o "soundflowOnly" do ViralFlow).
+    // Exige login: o recurso é somado no convite da conta, e o e-mail é o da conta.
+    const addon: Addon | null = addonBruto === "padrinhos" || addonBruto === "pix" ? addonBruto : null;
+    let userId: string | null = null;
+    let emailConta = "";
+    if (addon) {
+      const token = (req.headers.get("Authorization") ?? "").replace(/^Bearer /, "");
+      const anon = createClient(env("SUPABASE_URL"), env("SUPABASE_ANON_KEY"), { auth: { persistSession: false } });
+      const { data: { user } } = await anon.auth.getUser(token);
+      if (!user?.email) return json({ erro: "Entre na sua conta para comprar." }, 401);
+      const { data: cv } = await sb.from("convites").select("recursos").eq("user_id", user.id)
+        .order("criado_em", { ascending: false }).limit(1).maybeSingle();
+      if (!cv) return json({ erro: "Não achamos um convite nesta conta." }, 400);
+      if (cv.recursos?.[addon]) return json({ erro: "Você já tem esse recurso liberado." }, 400);
+      userId = user.id;
+      emailConta = user.email.toLowerCase();
+    }
 
     const nome = String(comprador.nome ?? "").trim().slice(0, 120);
-    const email = String(comprador.email ?? "").trim().toLowerCase();
+    const email = emailConta || String(comprador.email ?? "").trim().toLowerCase();
     const whatsapp = soDigitos(comprador.whatsapp);
     const cpf = soDigitos(pagamento?.payer?.identification?.number ?? comprador.cpf);
 
@@ -23,14 +42,14 @@ Deno.serve(async (req) => {
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(email)) return json({ erro: "E-mail inválido. É por ele que o acesso chega." }, 400);
     if (whatsapp && whatsapp.length !== 10 && whatsapp.length !== 11) return json({ erro: "WhatsApp inválido. Coloque DDD + número." }, 400);
 
-    const itensLimpos = limparItens(itens);
+    const itensLimpos = limparItens(itens, addon);
     const valor = calcularTotal(itensLimpos);
     const metodo = String(pagamento.payment_method_id ?? "");
     if (!metodo) return json({ erro: "Escolha uma forma de pagamento." }, 400);
 
     // Grava o pedido ANTES de cobrar, para nada se perder.
     const { data: pedido, error: erroPedido } = await sb.from("pedidos")
-      .insert({ nome, email, whatsapp: whatsapp || null, cpf: cpf || null, itens: itensLimpos, valor, metodo, status: "pendente" })
+      .insert({ nome, email, whatsapp: whatsapp || null, cpf: cpf || null, itens: itensLimpos, valor, metodo, status: "pendente", user_id: userId })
       .select("id").single();
     if (erroPedido) throw new Error("gravar pedido: " + erroPedido.message);
     pedidoId = pedido.id;
@@ -41,7 +60,7 @@ Deno.serve(async (req) => {
     else if (pagamento?.payer?.identification?.number) payer.identification = pagamento.payer.identification;
     const corpo: Record<string, unknown> = {
       transaction_amount: valor, // valor do servidor, nunca do navegador
-      description: PRODUTO,
+      description: addon ? (addon === "padrinhos" ? "Pode Abrir - Convite dos Padrinhos" : "Pode Abrir - Presentes no Pix") : PRODUTO,
       payment_method_id: metodo,
       external_reference: pedidoId,
       notification_url: `${env("SUPABASE_URL")}/functions/v1/mp-webhook`,

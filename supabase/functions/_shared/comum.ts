@@ -20,13 +20,17 @@ export const PRECOS = {
 } as const;
 export const PRODUTO = "Pode Abrir - Convite de casamento";
 
-export type Itens = { base: true; padrinhos: boolean; pix: boolean };
+export type Itens = { base: boolean; padrinhos: boolean; pix: boolean };
+export type Addon = "padrinhos" | "pix";
 
-export function limparItens(itens: Record<string, unknown> = {}): Itens {
+// Compra normal: convite + bumps marcados. Compra de um bump só (o "soundflowOnly"
+// do ViralFlow): base = false e só aquele recurso.
+export function limparItens(itens: Record<string, unknown> = {}, addon: Addon | null = null): Itens {
+  if (addon) return { base: false, padrinhos: addon === "padrinhos", pix: addon === "pix" };
   return { base: true, padrinhos: itens.padrinhos === true, pix: itens.pix === true };
 }
 export function calcularTotal(itens: Itens): number {
-  let t = PRECOS.base;
+  let t = itens.base ? PRECOS.base : 0;
   if (itens.padrinhos) t += PRECOS.padrinhos;
   if (itens.pix) t += PRECOS.pix;
   return Number(t.toFixed(2));
@@ -98,6 +102,22 @@ export async function ligarAConta(sb: SupabaseClient, pedido: { id: string; emai
   return uid as string;
 }
 
+// Soma o(s) recurso(s) de uma compra só-de-bump no convite mais recente da pessoa.
+export async function liberarAddon(sb: SupabaseClient, pedido: { id: string; email: string; itens: Record<string, boolean> }) {
+  const { data: p } = await sb.from("pedidos").select("user_id").eq("id", pedido.id).single();
+  const uid = p?.user_id ?? (await sb.rpc("user_id_por_email", { p_email: pedido.email })).data;
+  if (!uid) return; // sem conta ainda: o ativar_compras soma quando ela entrar
+  await sb.from("pedidos").update({ user_id: uid }).eq("id", pedido.id);
+  const { data: cv } = await sb.from("convites").select("id, recursos").eq("user_id", uid)
+    .order("criado_em", { ascending: false }).limit(1).maybeSingle();
+  if (!cv) return;
+  const recursos = { ...(cv.recursos ?? {}) };
+  if (pedido.itens?.padrinhos) recursos.padrinhos = true;
+  if (pedido.itens?.pix) recursos.pix = true;
+  const { error } = await sb.from("convites").update({ recursos }).eq("id", cv.id);
+  if (error) throw new Error("liberarAddon: " + error.message);
+}
+
 // ---- ENTREGA ----
 // Chamada quando um pedido vira "aprovado" (criar-pagamento no cartão aprovado na
 // hora, ou mp-webhook no Pix). Os dois podem chegar juntos: a trava é o
@@ -115,6 +135,12 @@ export async function entregar(sb: SupabaseClient, pedidoId: string): Promise<vo
   if (!pedido) return;
 
   try {
+    // Compra de um bump só: soma o recurso no convite que a pessoa já tem.
+    if (pedido.itens && pedido.itens.base === false) {
+      await liberarAddon(sb, pedido);
+      await avisarAdmin(pedido);
+      return;
+    }
     const uid = await ligarAConta(sb, pedido);
     await enviarAcesso(sb, pedido.email, pedido.nome, !uid);
     await avisarAdmin(pedido);
@@ -146,7 +172,7 @@ export async function enviarAcesso(sb: SupabaseClient, email: string, nome: stri
 }
 
 async function avisarAdmin(pedido: { nome: string; email: string; itens: Record<string, boolean>; valor: number }) {
-  const extras = [pedido.itens?.padrinhos && "Padrinhos", pedido.itens?.pix && "Pix"].filter(Boolean).join(" + ");
+  const extras = [pedido.itens?.base === false && "SÓ O BUMP", pedido.itens?.padrinhos && "Padrinhos", pedido.itens?.pix && "Pix"].filter(Boolean).join(" + ");
   const valor = Number(pedido.valor).toFixed(2).replace(".", ",");
   for (const a of admins()) {
     await enviarEmail(a, `Venda: R$ ${valor}${extras ? " (" + extras + ")" : ""}`,

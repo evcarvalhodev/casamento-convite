@@ -62,7 +62,7 @@ h1 { font-family: "Instrument Serif", serif; font-weight: 400; font-size: clamp(
   <div class="totais"><div><b id="t-sim">0</b><span>confirmaram</span></div><div><b id="t-pessoas">0</b><span>pessoas</span></div><div><b id="t-nao">0</b><span>não vão</span></div></div>
 
   <div class="barra">
-    <div class="filtros" id="filtros"><button type="button" data-f="todos" class="on">Todos</button><button type="button" data-f="sim">Vão</button><button type="button" data-f="nao">Não vão</button></div>
+    <div class="filtros" id="filtros"><button type="button" data-f="todos" class="on">Todos</button><button type="button" data-f="sim">Vão</button><button type="button" data-f="nao">Não vão</button><button type="button" data-f="padrinhos">Padrinhos</button></div>
     <input class="busca" id="busca" type="search" placeholder="Buscar nome" aria-label="Buscar nome">
     <button class="btn" id="baixar" type="button">Baixar lista</button>
     <button class="btn" id="atualizar" type="button">Atualizar</button>
@@ -88,18 +88,20 @@ function quando(iso) {
 function toast(t) { const el = $("#toast"); el.textContent = t; el.classList.add("on"); setTimeout(() => el.classList.remove("on"), 2200); }
 
 function pintar() {
-  const sim = todos.filter(r => r.vai);
+  const ehPad = (r) => r.tipo === "padrinho" || r.tipo === "madrinha";
+  const conv = todos.filter(r => !ehPad(r));
+  const sim = conv.filter(r => r.vai);
   $("#t-sim").textContent = sim.length;
   $("#t-pessoas").textContent = sim.reduce((a, r) => a + r.pessoas, 0);
-  $("#t-nao").textContent = todos.length - sim.length;
+  $("#t-nao").textContent = conv.length - sim.length;
   const q = $("#busca").value.trim().toLowerCase();
-  const lista = todos.filter(r => (filtro === "todos" || (filtro === "sim") === r.vai) && (!q || r.nome.toLowerCase().includes(q)));
+  const lista = todos.filter(r => (filtro === "todos" || (filtro === "padrinhos" ? ehPad(r) : !ehPad(r) && (filtro === "sim") === r.vai)) && (!q || r.nome.toLowerCase().includes(q)));
   $("#lista").innerHTML = lista.length ? lista.map(r => `
     <div class="resp">
       <span class="av">${esc(r.nome.trim()[0] || "?").toUpperCase()}</span>
       <div class="meio"><b>${esc(r.nome)}</b><small>${quando(r.criado_em)}</small>${r.recado ? `<q>${esc(r.recado)}</q>` : ""}
         <button class="apagar" type="button" data-apagar="${r.id}">Apagar resposta</button></div>
-      <span class="tag ${r.vai ? "sim" : "nao"}">${r.vai ? (r.pessoas > 1 ? r.pessoas + " pessoas" : "1 pessoa") : "Não vai"}</span>
+      <span class="tag ${r.vai ? "sim" : "nao"}">${ehPad(r) ? (r.tipo === "madrinha" ? "Madrinha" : "Padrinho") + (r.vai ? ": aceitou" : ": não pode") : r.vai ? (r.pessoas > 1 ? r.pessoas + " pessoas" : "1 pessoa") : "Não vai"}</span>
     </div>`).join("")
     : `<div class="vazio">${todos.length ? "Ninguém com esse filtro." : "Ainda ninguém respondeu. Mande o link no WhatsApp!"}</div>`;
   document.querySelectorAll("[data-apagar]").forEach(b => b.onclick = async () => {
@@ -131,8 +133,8 @@ $("#busca").oninput = pintar;
 $("#atualizar").onclick = carregar;
 $("#copiar").onclick = async () => { try { await navigator.clipboard.writeText($("#link").value); toast("Link copiado"); } catch (_) { $("#link").select(); } };
 $("#baixar").onclick = () => {
-  const linhas = [["Nome", "Vai", "Pessoas", "Recado", "Respondeu em"]].concat(
-    todos.map(r => [r.nome, r.vai ? "Sim" : "Não", r.pessoas, r.recado || "", new Date(r.criado_em).toLocaleString("pt-BR")]));
+  const linhas = [["Nome", "Tipo", "Vai", "Pessoas", "Recado", "Respondeu em"]].concat(
+    todos.map(r => [r.nome, r.tipo || "convidado", r.vai ? "Sim" : "Não", r.pessoas, r.recado || "", new Date(r.criado_em).toLocaleString("pt-BR")]));
   const csv = "﻿" + linhas.map(l => l.map(c => `"${String(c).replace(/"/g, '""')}"`).join(";")).join("\r\n");
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));

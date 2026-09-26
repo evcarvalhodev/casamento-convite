@@ -21,7 +21,7 @@
   window.salvarConfirmacao = async function (d) {
     if (!d.convite || d.convite === "demo" || d.convite === "previa") return; // demonstração não grava
     const { error } = await SB.rpc("confirmar_presenca", {
-      p_slug: d.convite, p_nome: d.nome, p_vai: d.vai, p_pessoas: d.pessoas, p_recado: d.recado || "",
+      p_slug: d.convite, p_nome: d.nome, p_vai: d.vai, p_pessoas: d.pessoas, p_recado: d.recado || "", p_tipo: d.tipo || "convidado",
     });
     if (error) throw error;
   };
@@ -101,7 +101,7 @@
     async confirmacoes() {
       const cv = await meuConvite();
       if (!cv) return { convite: null, lista: [] };
-      const { data, error } = await SB.from("confirmacoes").select("id, criado_em, nome, vai, pessoas, recado")
+      const { data, error } = await SB.from("confirmacoes").select("id, criado_em, nome, vai, pessoas, recado, tipo")
         .eq("convite_id", cv.id).order("criado_em", { ascending: false }).limit(1000);
       if (error) throw error;
       return { convite: cv, lista: data };

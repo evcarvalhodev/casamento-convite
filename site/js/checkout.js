@@ -251,6 +251,15 @@
     document.body.appendChild(el);
 
     const $ = (s) => el.querySelector(s);
+    if (estado.addon) {
+      const a = ADDONS[estado.addon];
+      $(".ck-prod b").textContent = a.nome;
+      $(".ck-prod small").textContent = a.sub + " · acesso imediato";
+      $(".ck-tags").innerHTML = a.tags.map(t => `<span>${t}</span>`).join("");
+      el.querySelectorAll("[data-bump]").forEach(b => b.remove());
+      $("#ck-v-base").parentNode.firstElementChild.textContent = a.nome;
+      $("#ck-email").closest(".ck-campo").innerHTML = `<label>Compra na sua conta</label><input value="${estado.email}" readonly style="background:#f9fafb;color:#6b7280"><small>O recurso é liberado no convite desta conta</small>`;
+    }
     $("#ck-fechar").onclick = fechar;
     el.addEventListener("keydown", (e) => { if (e.key === "Escape") fechar(); });
     el.querySelectorAll("[data-bump]").forEach((b) => b.onclick = () => {
@@ -267,11 +276,16 @@
   }
 
   const P = () => window.CONFIG.PRECOS;
-  const total = () => P().base + (estado.itens.padrinhos ? P().padrinhos : 0) + (estado.itens.pix ? P().pix : 0);
+  const ADDONS = {
+    padrinhos: { nome: "Convite dos Padrinhos", sub: "O pedido especial pros seus padrinhos, com o mesmo envelope", tags: ["Nome no envelope", "Resposta no painel", "Padrinhos ilimitados"] },
+    pix: { nome: "Presentes no Pix", sub: "Chave Pix e QR Code no convite, direto na sua conta", tags: ["Sem taxa", "QR Code pronto", "Cai na hora"] },
+  };
+  const total = () => estado.addon ? P()[estado.addon]
+    : P().base + (estado.itens.padrinhos ? P().padrinhos : 0) + (estado.itens.pix ? P().pix : 0);
 
   function pintar() {
     const $ = (s) => el.querySelector(s);
-    $("#ck-v-base").textContent = brl(P().base);
+    $("#ck-v-base").textContent = brl(estado.addon ? P()[estado.addon] : P().base);
     $("#ck-v-padrinhos").textContent = brl(P().padrinhos);
     $("#ck-v-pix").textContent = brl(P().pix);
     $("#ck-b-padrinhos").textContent = "+ " + brl(P().padrinhos);
@@ -322,11 +336,12 @@
 
   async function cobrar(comprador, pagamento) {
     if (!window.chamarFuncao) throw new Error("O pagamento ainda não está configurado neste endereço (teste local).");
+    if (estado.addon) return chamarFuncao("criar-pagamento", { comprador, addon: estado.addon, pagamento }, true);
     return chamarFuncao("criar-pagamento", { comprador, itens: { padrinhos: estado.itens.padrinhos, pix: estado.itens.pix }, pagamento });
   }
 
   async function pagarPix() {
-    const email = el.querySelector("#ck-email").value.trim().toLowerCase();
+    const email = estado.addon ? estado.email : el.querySelector("#ck-email").value.trim().toLowerCase();
     const zap = el.querySelector("#ck-zap").value;
     if (!emailOk(email)) return erro("E-mail inválido. Verifique e tente novamente.");
     if (zap && !zapOk(zap)) return erro("WhatsApp inválido. Coloque DDD + número, ex.: (11) 99999-9999.");
@@ -348,7 +363,7 @@
   }
 
   async function pagarCartao(formData) {
-    const email = String((formData.payer && formData.payer.email) || "").trim().toLowerCase();
+    const email = estado.addon ? estado.email : String((formData.payer && formData.payer.email) || "").trim().toLowerCase();
     const zap = el.querySelector("#ck-zap2").value;
     if (!emailOk(email)) { erro("E-mail inválido. Verifique o campo e-mail e tente novamente."); return; }
     if (zap && !zapOk(zap)) { erro("WhatsApp inválido. Coloque DDD + número."); return; }
@@ -401,6 +416,15 @@
   function aprovado() {
     clearInterval(poll);
     // if (window.fbq) fbq("track", "Purchase", ...) — disparar ANTES de sair da página
+    if (estado.addon) {
+      const $ = (s) => el.querySelector(s);
+      $("#ck-form").hidden = true; $("#ck-tela-pix").hidden = true; $("#ck-tela-ok").hidden = false;
+      $(".ck-aprovado h3").textContent = ADDONS[estado.addon].nome + " liberado!";
+      $(".ck-aprovado p").textContent = "Pronto. Já está destravado no seu convite.";
+      $(".ck-aprovado p + p").remove();
+      setTimeout(() => { if (opcoes.aoAprovar) opcoes.aoAprovar(); else location.reload(); }, 1500);
+      return;
+    }
     // Igual ao ViralFlow: vai pro /parabens criar a senha e entrar direto.
     if (estado.email) { location.href = "/parabens?email=" + encodeURIComponent(estado.email); return; }
     const $ = (s) => el.querySelector(s);
@@ -414,9 +438,14 @@
   async function abrir(opts) {
     opcoes = opts || {};
     if (el) return;
-    estado = { itens: { padrinhos: false, pix: false }, aba: "pix", processando: false, email: "" };
+    estado = { itens: { padrinhos: false, pix: false }, aba: "pix", processando: false, email: "", addon: opcoes.addon || null };
     document.documentElement.style.overflow = "hidden";
     try { await dependencias(); } catch (e) { console.error("checkout: falhou ao carregar", e); }
+    if (estado.addon) {
+      const { data } = window.SB ? await SB.auth.getSession() : { data: {} };
+      if (!data || !data.session) { document.documentElement.style.overflow = ""; location.href = "/entrar"; return; }
+      estado.email = data.session.user.email;
+    }
     montarTela();
     pintar();
     el.setAttribute("tabindex", "-1"); el.focus({ preventScroll: true });

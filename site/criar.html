@@ -207,6 +207,21 @@ input, textarea, select { font: inherit; color: inherit; }
 .lista-conv .item button { font-size: 13px; font-weight: 700; padding: 8px 12px; border-radius: 999px; background: var(--card); border: 1px solid var(--line); }
 .aviso { font-size: 13px; color: var(--soft); margin-top: 14px; }
 .simulado { background: #fff4d6; border: 1px solid #ecd28a; color: #6b5310; font-size: 14px; border-radius: 12px; padding: 12px 14px; margin-top: 16px; text-align: left; }
+/* bumps: cadeado (mesmo desenho da LockedScreen do ViralFlow) */
+.travado { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; padding: 18px 8px 6px; }
+.travado .cad { width: 64px; height: 64px; border-radius: 50%; background: var(--accent-bg); border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); display: grid; place-items: center; color: var(--accent); }
+.travado .cad svg { width: 28px; height: 28px; }
+.travado b { font-size: 16px; }
+.travado p { font-size: 14px; color: var(--soft); max-width: 36ch; }
+.travado .btn { width: 100%; }
+.travado small { font-size: 12px; color: var(--faint); }
+.bloco h2 .cadeado { display: inline-flex; vertical-align: -2px; margin-left: 6px; color: var(--faint); }
+.bloco h2 .cadeado svg { width: 15px; height: 15px; }
+.bloco h2 .liberado { font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--ok); background: #e7f1e8; border-radius: 999px; padding: 2px 8px; margin-left: 6px; vertical-align: 2px; }
+.sugestao { display: grid; grid-template-columns: 1fr 110px 36px; gap: 8px; margin-top: 8px; }
+.sugestao input { width: 100%; font-size: 16px; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 12px; min-height: 48px; }
+.sugestao button { border-radius: 10px; color: var(--soft); font-size: 20px; }
+.mais-sug { margin-top: 10px; font-size: 14px; font-weight: 700; color: var(--accent); padding: 8px 0; }
 .toast { position: fixed; left: 50%; bottom: calc(100px + env(safe-area-inset-bottom)); transform: translateX(-50%) translateY(20px); background: var(--ink); color: #fff; font-size: 14px; font-weight: 600; padding: 12px 18px; border-radius: 999px; opacity: 0; transition: .25s; z-index: 90; pointer-events: none; white-space: nowrap; }
 .toast.on { opacity: 1; transform: translateX(-50%); }
 </style>
@@ -322,7 +337,15 @@ input, textarea, select { font: inherit; color: inherit; }
         </div>
       </section>
 
-      <!-- 6. LINK -->
+      <!-- 6. EXTRAS (orderbumps) -->
+      <section class="passo" data-passo="extras">
+        <h1>Os <em>extras</em></h1>
+        <p class="sub">Presentes no Pix e o convite dos padrinhos.</p>
+        <div class="bloco" id="bloco-pix"></div>
+        <div class="bloco" id="bloco-padrinhos"></div>
+      </section>
+
+      <!-- 7. LINK -->
       <section class="passo" data-passo="link">
         <h1>Quase <em>pronto</em></h1>
         <p class="sub">Falta escolher o endereço do convite e até quando os convidados podem confirmar.</p>
@@ -356,6 +379,7 @@ input, textarea, select { font: inherit; color: inherit; }
           <div class="campo" style="display:flex;gap:8px"><input type="text" id="nome-conv" placeholder="Ex.: Tia Marta" maxlength="60" aria-label="Nome do convidado"><button class="btn sec" id="add-conv" type="button">Criar</button></div>
           <div class="lista-conv" id="lista-conv"></div>
         </div>
+        <div class="bloco" style="text-align:left" id="bloco-links-padrinhos"></div>
         <p class="aviso">Precisa mudar algo? Toque em "Editar" e publique de novo. O link continua o mesmo.</p>
         <div class="acoes" style="margin-top:12px"><a class="btn prim" href="/painel" id="ir-painel">Ver quem confirmou</a><button class="btn sec" id="editar" type="button">Editar convite</button></div>
       </section>
@@ -396,6 +420,7 @@ input, textarea, select { font: inherit; color: inherit; }
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="/js/config.js"></script>
 <script src="/js/api.js"></script>
+<script src="/js/checkout.js"></script>
 
 <script>
 /* ============ CONFIG ============ */
@@ -429,7 +454,11 @@ const S = {
   mensagem: "", traje: { texto: "Esporte fino", cores: [], evitar: "" },
   rsvp_ate: "", slug: "", slugManual: false,
   fotos: [null, null, null], // { url (blob), blob, filtro }
-  publicado: null, convidados: []
+  publicado: null, convidados: [],
+  recursos: { padrinhos: true, pix: true }, // em produção vem do banco (o que foi comprado)
+  pix: { tipo: "celular", chave: "", nome: "", cidade: "", mensagem: "", sugestoes: [
+    { nome: "Jantar romântico", valor: 150 }, { nome: "Passeio na lua de mel", valor: 300 }, { nome: "Ajuda na casa nova", valor: 500 } ] },
+  padrinhos_msg: "", padrinhosLista: []
 };
 const CHAVE = "convite-rascunho";
 
@@ -483,6 +512,10 @@ function paraConvite() {
     recepcao: rec && (rec.nome || rec.endereco) ? rec : null,
     traje: { texto: S.traje.texto, cores: S.traje.cores, evitar: S.traje.evitar.trim() },
     rsvp_ate: S.rsvp_ate,
+    recursos: { ...S.recursos },
+    pix: S.recursos.pix && S.pix.chave.trim() ? { chave: chavePix(), nome: S.pix.nome.trim(), cidade: S.pix.cidade.trim(), mensagem: S.pix.mensagem.trim(),
+      sugestoes: S.pix.sugestoes.filter(x => x.nome.trim() && Number(x.valor) > 0).map(x => ({ nome: x.nome.trim(), valor: Number(x.valor) })) } : null,
+    padrinhos_msg: S.padrinhos_msg.trim(),
     musica: ""
   };
 }
@@ -514,7 +547,7 @@ $("#fechar-previa").onclick = () => { $("#previa-cheia").hidden = true; document
 $$("[data-rever]").forEach(b => b.onclick = () => { const k = b.dataset.rever === "desk" ? "desk" : "mob"; fechadoNaProxima[k] = true; enviarPrevia(k); });
 
 /* ============ PASSOS ============ */
-const PASSOS = ["modelo", "casal", "fotos", "locais", "detalhes", "link"];
+const PASSOS = ["modelo", "casal", "fotos", "locais", "detalhes", "extras", "link"];
 let atual = 0;
 function irPara(i) {
   atual = Math.max(0, Math.min(i, PASSOS.length));
@@ -559,6 +592,9 @@ function validar(passo) {
     if (!S.cerimonia.nome.trim()) ok = marcaErro($("#c-nome"), "Escreva o nome do local.");
     if (!S.cerimonia.endereco.trim()) ok = marcaErro($("#c-end"), "Sem endereço o botão \"Como chegar\" não funciona.");
     if (S.recTipo === "outro" && !S.recepcao.nome.trim()) ok = marcaErro($("#r-nome"), "Escreva o nome do local da recepção.");
+  }
+  if (passo === "extras" && S.recursos.pix && S.pix.chave.trim() && !S.pix.nome.trim()) {
+    ok = marcaErro($("#pix-nome"), "Coloque o nome como aparece no banco.");
   }
   if (passo === "link" && !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(S.slug)) { $("#slug-erro").textContent = "Use só letras, números e hífen."; $("#slug-erro").hidden = false; ok = false; }
   if (!ok) { const e = $(".invalido"); e && e.scrollIntoView({ block: "center", behavior: "smooth" }); }
@@ -781,6 +817,7 @@ function mostrarPronto() {
   $("#aviso-simulado").hidden = !S.simulado;
   $("#abrir-convite").onclick = S.simulado ? (e) => { e.preventDefault(); carregarPrevia("mob"); fechadoNaProxima.mob = true; $("#previa-cheia").hidden = false; document.body.style.overflow = "hidden"; enviarPrevia("mob"); } : null;
   pintarConvidados();
+  pintarLinksPadrinhos();
 }
 async function copiar(t) {
   try { await navigator.clipboard.writeText(t); toast("Link copiado"); }
@@ -797,6 +834,105 @@ function pintarConvidados() {
   $$("[data-copiar]").forEach(b => b.onclick = () => copiar(linkPara(S.convidados[b.dataset.copiar])));
 }
 $("#editar").onclick = () => irPara(0);
+
+/* ============ ORDERBUMPS (cadeado igual ao ViralFlow) ============ */
+const PRECO = (k) => ((window.CONFIG && window.CONFIG.PRECOS) || { padrinhos: 27, pix: 19.9 })[k];
+const reais = (v) => "R$" + Number(v).toFixed(2).replace(".", ",");
+const CAD = `<span class="cadeado" title="Bloqueado"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span>`;
+const INFO = {
+  pix: { nome: "Presentes no Pix", desc: "Uma seção no convite com a chave Pix de vocês e o QR Code. O convidado escolhe o presente e o dinheiro cai direto na sua conta, sem taxa." },
+  padrinhos: { nome: "Convite dos Padrinhos", desc: "O mesmo envelope, com a pergunta \"Quer ser nosso padrinho?\". Cada padrinho recebe o seu, com o nome no envelope, e responde com um toque." },
+};
+function travado(k) {
+  return `<div class="travado"><div class="cad">${CAD.replace('class="cadeado"', '')}</div>
+    <b>Parece que você ainda não adquiriu esse produto</b>
+    <p>${INFO[k].desc}</p>
+    <button class="btn prim" type="button" data-comprar="${k}">Adquirir ${INFO[k].nome} por ${reais(PRECO(k))}</button>
+    <small>Acesso imediato · Pagamento único</small></div>`;
+}
+function ligarComprar(raiz) {
+  raiz.querySelectorAll("[data-comprar]").forEach(b => b.onclick = () => {
+    salvarRascunho();
+    if (!window.abrirCheckout) return toast("Compra indisponível agora. Tente de novo.");
+    abrirCheckout({ addon: b.dataset.comprar, aoAprovar: () => location.reload() });
+  });
+}
+const titulo = (k) => `<h2>${INFO[k].nome}${S.recursos[k] ? '<span class="liberado">Liberado</span>' : CAD}</h2>`;
+
+function chavePix() {
+  const c = S.pix.chave.trim();
+  if (S.pix.tipo === "celular") { const d = c.replace(/\D/g, ""); return d.length >= 12 && d.startsWith("55") ? "+" + d : "+55" + d; }
+  if (S.pix.tipo === "cpf") return c.replace(/\D/g, "");
+  return c.toLowerCase();
+}
+
+function pintarExtras() {
+  const bp = $("#bloco-pix"), bd = $("#bloco-padrinhos");
+  if (!S.recursos.pix) { bp.innerHTML = titulo("pix") + travado("pix"); ligarComprar(bp); }
+  else {
+    bp.innerHTML = titulo("pix") + `
+      <p class="dica">Aparece no convite como "Lista de presentes". Cada presente vira um QR Code do Pix com o valor.</p>
+      <div class="campo"><span class="lbl">Tipo da chave</span><div class="pilulas" id="pix-tipo">
+        <button type="button" data-v="celular">Celular</button><button type="button" data-v="cpf">CPF/CNPJ</button><button type="button" data-v="email">E-mail</button><button type="button" data-v="aleatoria">Aleatória</button></div></div>
+      <div class="campo"><label for="pix-chave">Chave Pix</label><input type="text" id="pix-chave" maxlength="77" autocapitalize="none" autocorrect="off"></div>
+      <div class="duas"><div class="campo"><label for="pix-nome">Nome no banco</label><input type="text" id="pix-nome" maxlength="25" placeholder="Ana Souza"></div>
+      <div class="campo"><label for="pix-cidade">Cidade</label><input type="text" id="pix-cidade" maxlength="15" placeholder="São Paulo"></div></div>
+      <div class="campo"><label for="pix-msg">Mensagem <span class="opc">(opcional)</span></label><textarea id="pix-msg" maxlength="200" placeholder="Sua presença é o nosso maior presente. Se quiser nos presentear, é só escolher abaixo."></textarea></div>
+      <div class="campo"><span class="lbl">Presentes sugeridos</span><div id="sugestoes"></div><button type="button" class="mais-sug" id="mais-sug">+ Adicionar presente</button></div>`;
+    pilulas("pix-tipo", () => S.pix.tipo, v => S.pix.tipo = v, () => {
+      $("#pix-chave").placeholder = { celular: "(11) 99999-9999", cpf: "Só números", email: "voce@email.com", aleatoria: "Cole a chave aleatória" }[S.pix.tipo];
+      $("#pix-chave").inputMode = S.pix.tipo === "celular" || S.pix.tipo === "cpf" ? "numeric" : S.pix.tipo === "email" ? "email" : "text";
+    });
+    ligar("pix-chave", () => S.pix.chave, v => S.pix.chave = v);
+    ligar("pix-nome", () => S.pix.nome, v => S.pix.nome = v);
+    ligar("pix-cidade", () => S.pix.cidade, v => S.pix.cidade = v);
+    ligar("pix-msg", () => S.pix.mensagem, v => S.pix.mensagem = v);
+    pintarSugestoes();
+    $("#mais-sug").onclick = () => { if (S.pix.sugestoes.length >= 8) return toast("Até 8 presentes"); S.pix.sugestoes.push({ nome: "", valor: "" }); pintarSugestoes(); };
+  }
+  if (!S.recursos.padrinhos) { bd.innerHTML = titulo("padrinhos") + travado("padrinhos"); ligarComprar(bd); }
+  else {
+    bd.innerHTML = titulo("padrinhos") + `
+      <p class="dica">Depois de publicar, você cria um link para cada padrinho e madrinha. Eles abrem o envelope com o nome deles e respondem se aceitam.</p>
+      <div class="campo"><label for="pad-msg">Mensagem para os padrinhos <span class="opc">(opcional)</span></label>
+      <textarea id="pad-msg" maxlength="280" placeholder="Você faz parte da nossa história, e a gente não consegue imaginar esse dia sem você do nosso lado no altar."></textarea></div>`;
+    ligar("pad-msg", () => S.padrinhos_msg, v => S.padrinhos_msg = v);
+  }
+}
+function pintarSugestoes() {
+  $("#sugestoes").innerHTML = S.pix.sugestoes.map((x, i) => `<div class="sugestao">
+    <input type="text" data-sn="${i}" value="${esc(x.nome)}" placeholder="Ex.: Jantar romântico" maxlength="40" aria-label="Presente">
+    <input type="text" data-sv="${i}" value="${x.valor ? Number(x.valor).toFixed(2).replace(".", ",") : ""}" placeholder="R$" inputmode="decimal" aria-label="Valor">
+    <button type="button" data-sx="${i}" aria-label="Tirar">×</button></div>`).join("");
+  $$("[data-sn]").forEach(el => el.oninput = () => { S.pix.sugestoes[el.dataset.sn].nome = el.value; salvarRascunho(); atualizarPrevia(); });
+  $$("[data-sv]").forEach(el => el.oninput = () => { S.pix.sugestoes[el.dataset.sv].valor = Number(el.value.replace(/\./g, "").replace(",", ".")) || 0; salvarRascunho(); atualizarPrevia(); });
+  $$("[data-sx]").forEach(el => el.onclick = () => { S.pix.sugestoes.splice(Number(el.dataset.sx), 1); pintarSugestoes(); salvarRascunho(); atualizarPrevia(); });
+}
+
+// Tela final: um link por padrinho/madrinha (só com o bump liberado).
+function pintarLinksPadrinhos() {
+  const b = $("#bloco-links-padrinhos");
+  if (!b) return;
+  if (!S.recursos.padrinhos) { b.innerHTML = titulo("padrinhos") + travado("padrinhos"); ligarComprar(b); return; }
+  b.innerHTML = titulo("padrinhos") + `<p class="dica">Crie o link de cada um. O envelope abre com o nome e a pergunta; a resposta aparece no seu painel.</p>
+    <div class="campo"><div class="pilulas" id="pad-genero"><button type="button" data-v="padrinho">Padrinho</button><button type="button" data-v="madrinha">Madrinha</button></div></div>
+    <div class="campo" style="display:flex;gap:8px"><input type="text" id="nome-pad" placeholder="Ex.: Carlos" maxlength="60" aria-label="Nome do padrinho"><button class="btn sec" id="add-pad" type="button">Criar</button></div>
+    <div class="lista-conv" id="lista-pad"></div>`;
+  let genero = "padrinho";
+  pilulas("pad-genero", () => genero, v => genero = v);
+  const add = () => { const n = $("#nome-pad").value.trim(); if (!n) return; S.padrinhosLista.unshift({ nome: n, m: genero === "madrinha" }); $("#nome-pad").value = ""; salvarRascunho(); listaPad(); };
+  $("#add-pad").onclick = add;
+  $("#nome-pad").addEventListener("keydown", (e) => { if (e.key === "Enter") add(); });
+  listaPad();
+}
+const linkPadrinho = (x) => S.publicado + "?padrinho=" + encodeURIComponent(x.nome) + (x.m ? "&m=1" : "");
+function listaPad() {
+  $("#lista-pad").innerHTML = S.padrinhosLista.map((x, i) => `<div class="item"><span>${esc(x.nome)} · ${x.m ? "madrinha" : "padrinho"}</span>
+    <button type="button" data-cp="${i}">Copiar</button>
+    <a class="btn sec" style="min-height:36px;padding:0 12px;font-size:13px;border-radius:999px" target="_blank" rel="noopener"
+      href="https://wa.me/?text=${encodeURIComponent(`${x.nome}, a gente tem um pedido especial pra te fazer 💍\nAbre aqui: ${linkPadrinho(x)}`)}">WhatsApp</a></div>`).join("");
+  $$("[data-cp]").forEach(b => b.onclick = () => copiar(linkPadrinho(S.padrinhosLista[b.dataset.cp])));
+}
 
 /* ============ UTIL ============ */
 let tToast;
@@ -821,6 +957,7 @@ function toast(t) { const el = $("#toast"); el.textContent = t; el.classList.add
     S.publicado = cv.publicado && cv.slug ? (window.CONFIG.SITE + "/" + cv.slug) : (S.simulado ? null : S.publicado);
     S.simulado = false;
     if (cv.slug && !S.slug) S.slug = cv.slug;
+    S.recursos = { padrinhos: !!(cv.recursos && cv.recursos.padrinhos), pix: !!(cv.recursos && cv.recursos.pix) };
   }
   ["nome1","nome2","data","hora","intro","mensagem","evitar","rsvp-ate","slug"].forEach(id => {
     const v = { nome1: S.nome1, nome2: S.nome2, data: S.data, hora: S.hora, intro: S.intro, mensagem: S.mensagem, evitar: S.traje.evitar, "rsvp-ate": S.rsvp_ate, slug: S.slug }[id];
@@ -829,7 +966,7 @@ function toast(t) { const el = $("#toast"); el.textContent = t; el.classList.add
   $("#c-nome").value = S.cerimonia.nome; $("#c-end").value = S.cerimonia.endereco;
   $("#r-nome").value = S.recepcao.nome; $("#r-end").value = S.recepcao.endereco; $("#r-hora").value = S.recepcao.hora;
   $("#conta-msg").textContent = S.mensagem.length + "/280";
-  pintarModelos(); pintarFotos(); pintarCores();
+  pintarModelos(); pintarFotos(); pintarCores(); pintarExtras();
   pilulas("rec-tipo", () => S.recTipo, v => S.recTipo = v, () => { $("#rec-campos").hidden = S.recTipo !== "outro"; $("#rec-hora-c").hidden = S.recTipo === "nao"; });
   pilulas("traje-tipo", () => S.traje.texto, v => S.traje.texto = v);
   if (S.publicado) { mostrarPronto(); irPara(PASSOS.length); } else irPara(0);
