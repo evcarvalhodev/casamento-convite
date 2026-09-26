@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#f9fafb">
+<title>Pagamento aprovado · Pode Abrir</title>
+<style>
+:root { --bg: #f9fafb; --card: #fff; --line: #e5e7eb; --ink: #111827; --soft: #6b7280; --faint: #9ca3af; --ok: #16a34a; --ok-bg: #ecfdf3; --erro: #b42318; --erro-bg: #fef3f2; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--ink); font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 15px; line-height: 1.5; min-height: 100dvh; }
+:focus-visible { outline: 2px solid #9ca3af; outline-offset: 2px; }
+.topo { background: #fff; border-bottom: 1px solid var(--line); padding: calc(12px + env(safe-area-inset-top)) 16px 12px; display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14px; color: #374151; }
+.topo svg { width: 17px; height: 17px; color: var(--ok); }
+.col { max-width: 440px; margin: 0 auto; padding: 28px 16px calc(40px + env(safe-area-inset-bottom)); }
+.card { background: var(--card); border: 1px solid #f3f4f6; border-radius: 18px; box-shadow: 0 1px 2px rgba(0,0,0,.04); padding: 26px 20px; }
+.selo { width: 64px; height: 64px; border-radius: 50%; background: var(--ok-bg); color: var(--ok); display: grid; place-items: center; margin: 0 auto; }
+.selo svg { width: 34px; height: 34px; }
+h1 { font-size: 23px; font-weight: 800; text-align: center; margin-top: 14px; }
+.sub { color: var(--soft); text-align: center; margin-top: 6px; }
+.passo { font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); margin-top: 24px; }
+label { display: grid; gap: 6px; font-size: 14px; font-weight: 500; color: #374151; margin-top: 12px; }
+input { width: 100%; font: inherit; font-size: 16px; color: var(--ink); background: #fff; border: 1px solid #d1d5db; border-radius: 12px; padding: 13px 14px; min-height: 50px; outline: none; -webkit-appearance: none; }
+input[readonly] { background: #f9fafb; color: var(--soft); }
+input:focus { border-color: #6b7280; box-shadow: 0 0 0 3px rgba(107,114,128,.15); }
+.olho { position: relative; }
+.olho button { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: 0; color: var(--soft); font: 600 13px inherit; font-family: inherit; cursor: pointer; padding: 8px; }
+.btn { width: 100%; border: 0; cursor: pointer; color: #fff; font-family: inherit; font-weight: 800; font-size: 15.5px; padding: 16px; border-radius: 12px; min-height: 54px; background: linear-gradient(135deg, #16a34a, #15803d); margin-top: 18px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.btn:disabled { opacity: .6; }
+.btn.escuro { background: var(--ink); }
+.erro { color: var(--erro); background: var(--erro-bg); border: 1px solid #fecdca; border-radius: 10px; padding: 10px 12px; font-size: 13.5px; margin-top: 12px; }
+.nota { font-size: 13px; color: var(--soft); text-align: center; margin-top: 16px; }
+.nota a { color: var(--ink); font-weight: 700; }
+.girando { width: 18px; height: 18px; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent; animation: gira .7s linear infinite; }
+@keyframes gira { to { transform: rotate(360deg); } }
+.espera { display: grid; justify-items: center; gap: 12px; padding: 20px 0; color: var(--soft); text-align: center; }
+.espera .girando { width: 28px; height: 28px; color: #6b7280; }
+</style>
+</head>
+<body>
+<div class="topo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6l8-3z"/></svg>Compra Segura</div>
+<div class="col"><div class="card" id="card"><div class="espera"><span class="girando"></span>Conferindo seu pagamento…</div></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="/js/config.js"></script>
+<script src="/js/api.js"></script>
+<script>
+const $ = (s) => document.querySelector(s);
+const esc = (t) => String(t ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const pedido = new URLSearchParams(location.search).get("pedido") || "";
+const SELO = '<div class="selo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>';
+
+function tela(html) { $("#card").innerHTML = html; }
+
+function criarSenha(email) {
+  tela(`${SELO}
+    <h1>Pagamento aprovado!</h1>
+    <p class="sub">Falta um passo: crie a senha pra entrar e montar o convite de vocês.</p>
+    <form id="f" novalidate>
+      <label>Seu e-mail<input type="email" value="${esc(email)}" readonly autocomplete="username"></label>
+      <label>Crie uma senha<span class="olho"><input type="password" id="senha" minlength="6" autocomplete="new-password" placeholder="Mínimo 6 caracteres"><button type="button" id="ver">Mostrar</button></span></label>
+      <button class="btn" id="ir" type="submit">Criar senha e montar meu convite</button>
+      <p class="erro" id="erro" hidden></p>
+    </form>
+    <p class="nota">Também mandamos um link de acesso para o seu e-mail.</p>`);
+  $("#ver").onclick = () => { const i = $("#senha"); i.type = i.type === "password" ? "text" : "password"; $("#ver").textContent = i.type === "password" ? "Mostrar" : "Ocultar"; };
+  $("#f").onsubmit = async (e) => {
+    e.preventDefault();
+    const senha = $("#senha").value;
+    const erro = (t) => { $("#erro").textContent = t; $("#erro").hidden = false; };
+    if (senha.length < 6) return erro("A senha precisa ter pelo menos 6 caracteres.");
+    $("#ir").disabled = true; $("#ir").innerHTML = '<span class="girando"></span>Entrando…'; $("#erro").hidden = true;
+    try {
+      const r = await chamarFuncao("ativar-acesso", { pedido_id: pedido, senha });
+      if (r.estado === "ja_tem_senha") return jaTemSenha(email);
+      const { error } = await SB.auth.signInWithPassword({ email, password: senha });
+      if (error) throw error;
+      location.replace("/criar");
+    } catch (err) {
+      erro(err.message || "Não deu certo. Tente de novo.");
+      $("#ir").disabled = false; $("#ir").textContent = "Criar senha e montar meu convite";
+    }
+  };
+}
+
+function jaTemSenha(email) {
+  tela(`${SELO}
+    <h1>Pagamento aprovado!</h1>
+    <p class="sub">Você já tem conta com o e-mail <b>${esc(email)}</b>. Entre com a sua senha para montar o convite novo.</p>
+    <a class="btn escuro" href="/entrar" style="text-decoration:none">Entrar</a>`);
+}
+
+async function esperarAprovacao(email) {
+  tela(`<div class="espera"><span class="girando"></span><b style="color:var(--ink)">Esperando a confirmação do pagamento</b><span>Assim que o banco confirmar, esta tela muda sozinha.${email ? ` O acesso também vai para ${esc(email)}.` : ""}</span></div>`);
+  const fim = Date.now() + 30 * 60 * 1000;
+  while (Date.now() < fim) {
+    await new Promise(r => setTimeout(r, 5000));
+    try { const r = await chamarFuncao("ativar-acesso", { pedido_id: pedido, so_consultar: true }); if (r.estado !== "pendente") return mostrar(r); } catch (_) {}
+  }
+}
+
+function mostrar(r) {
+  if (r.estado === "criar_senha") return criarSenha(r.email);
+  if (r.estado === "ja_tem_senha") return jaTemSenha(r.email);
+  if (r.estado === "pendente") return esperarAprovacao(r.email);
+}
+
+(async () => {
+  if (!window.chamarFuncao || !pedido) {
+    tela(`<h1>Tudo certo por aqui</h1><p class="sub">Se você acabou de comprar, o acesso foi para o seu e-mail.</p><a class="btn escuro" href="/entrar" style="text-decoration:none">Entrar</a>`);
+    return;
+  }
+  try { mostrar(await chamarFuncao("ativar-acesso", { pedido_id: pedido, so_consultar: true })); }
+  catch (e) { tela(`<h1>Não conseguimos conferir agora</h1><p class="sub">${esc(e.message)}</p><a class="btn escuro" href="/entrar" style="text-decoration:none">Entrar com meu e-mail</a>`); }
+})();
+</script>
+</body>
+</html>

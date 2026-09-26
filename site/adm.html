@@ -130,7 +130,7 @@ function tabelaPedidos() {
     <td>${p.itens && p.itens.padrinhos ? '<span class="pill extra">Padrinhos</span>' : ""}${p.itens && p.itens.pix ? '<span class="pill extra">Pix</span>' : ""}</td>
     <td><span class="pill ${esc(p.status)}">${esc(p.status)}</span><small>${esc(p.status_detalhe || "")}</small></td>
     <td class="num">${p.acesso_enviado_em ? dt(p.acesso_enviado_em) : (p.status === "aprovado" ? "<b style='color:var(--erro)'>não enviado</b>" : "–")}</td>
-    <td>${p.status === "aprovado" ? `<button class="acao" data-reenviar="${p.id}" type="button">Reenviar acesso</button>` : ""}</td>
+    <td>${p.status === "aprovado" ? `<button class="acao" data-reenviar="${p.id}" type="button">Reenviar acesso</button> <button class="acao" data-parabens="${p.id}" type="button">Link do /parabens</button>` : ""}</td>
   </tr>`).join("") || `<tr><td colspan="7" class="vazio">Nenhum pedido.</td></tr>`}
   </tbody></table></div>`;
 }
@@ -182,6 +182,12 @@ function ligarAcoes() {
     b.disabled = true;
     try { const r = await chamarFuncao("admin", { acao: "reenviar", pedido_id: b.dataset.reenviar }, true); toast(r.mensagem); await carregar(); }
     catch (e) { toast(e.message); b.disabled = false; }
+  });
+  // Link pra pessoa criar a senha (vale enquanto ela ainda não criou). Suporte e teste.
+  document.querySelectorAll("[data-parabens]").forEach(b => b.onclick = async () => {
+    const link = location.origin + "/parabens?pedido=" + b.dataset.parabens;
+    try { await navigator.clipboard.writeText(link); toast("Link copiado. Só funciona se a pessoa ainda não criou senha."); }
+    catch (_) { prompt("Copie o link:", link); }
   });
   document.querySelectorAll("[data-publicar]").forEach(b => b.onclick = async () => {
     b.disabled = true;

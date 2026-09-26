@@ -336,6 +336,7 @@
     estado.email = email;
     try {
       const r = await cobrar({ email, whatsapp: dig(zap) }, { payment_method_id: "pix" });
+      estado.pedidoId = r.pedido_id;
       if (r.status === "approved") return aprovado();
       if (!r.pix) throw new Error("O Pix não foi gerado. Tente de novo.");
       mostrarPix(r);
@@ -357,6 +358,7 @@
     el.querySelector("#ck-processando").hidden = false;
     try {
       const r = await cobrar({ email, whatsapp: dig(zap) }, formData);
+      estado.pedidoId = r.pedido_id;
       if (r.status === "approved") return aprovado();
       if (r.status === "in_process" || r.status === "pending") return erro("Pagamento em análise pelo banco. O acesso chega no seu e-mail assim que for aprovado.");
       erro("Pagamento não aprovado. Confira os dados do cartão ou pague com Pix.");
@@ -398,6 +400,9 @@
 
   function aprovado() {
     clearInterval(poll);
+    // if (window.fbq) fbq("track", "Purchase", ...) — disparar ANTES de sair da página
+    // Igual ao ViralFlow: vai pro /parabens criar a senha e entrar direto.
+    if (estado.pedidoId) { location.href = "/parabens?pedido=" + encodeURIComponent(estado.pedidoId); return; }
     const $ = (s) => el.querySelector(s);
     $("#ck-ok-email").textContent = estado.email || "informado";
     $("#ck-form").hidden = true; $("#ck-tela-pix").hidden = true; $("#ck-tela-ok").hidden = false;

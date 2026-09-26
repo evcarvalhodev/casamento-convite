@@ -26,6 +26,7 @@ button { width: 100%; margin-top: 14px; min-height: 54px; border-radius: 999px; 
 button:disabled { opacity: .5; }
 .msg { margin-top: 16px; font-size: 14.5px; padding: 12px 14px; border-radius: 12px; background: var(--gold-bg); }
 .msg.erro { background: #fbeeec; color: #8c2a20; }
+.link { background: none; color: var(--soft); font: 600 14px "Manrope", sans-serif; margin-top: 10px; min-height: 40px; text-decoration: underline; text-underline-offset: 3px; }
 .rodape { margin-top: 18px; font-size: 13.5px; color: var(--soft); }
 .rodape a { color: var(--ink); font-weight: 700; }
 :focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
@@ -36,11 +37,14 @@ button:disabled { opacity: .5; }
   <a class="marca" href="/">Pode <em>Abrir</em></a>
   <form class="cartao" id="form" novalidate>
     <h1>Entrar</h1>
-    <p class="sub">Digite o e-mail usado na compra. Mandamos um link que já entra direto, sem senha.</p>
+    <p class="sub">Use o e-mail da compra e a senha que você criou.</p>
     <label for="email">E-mail</label>
-    <input id="email" type="email" autocomplete="email" inputmode="email" placeholder="voce@email.com" required>
-    <button id="enviar" type="submit">Mandar o link</button>
+    <input id="email" type="email" autocomplete="username" inputmode="email" placeholder="voce@email.com" required>
+    <div id="bloco-senha"><label for="senha">Senha</label>
+    <input id="senha" type="password" autocomplete="current-password" placeholder="Sua senha"></div>
+    <button id="enviar" type="submit">Entrar</button>
     <p class="msg" id="msg" hidden></p>
+    <button type="button" id="trocar" class="link">Esqueci a senha · entrar com link no e-mail</button>
   </form>
   <p class="rodape">Ainda não tem o seu convite? <a href="/">Conheça o Pode Abrir</a></p>
 </div>
@@ -54,12 +58,29 @@ const destino = volta && volta.startsWith("/") && !volta.startsWith("//") ? volt
 if (window.SB) SB.auth.getSession().then(({ data }) => { if (data.session) location.replace(destino); });
 
 const msg = document.getElementById("msg");
+let modoLink = false;
+document.getElementById("trocar").onclick = () => {
+  modoLink = !modoLink;
+  document.getElementById("bloco-senha").hidden = modoLink;
+  document.getElementById("enviar").textContent = modoLink ? "Mandar o link" : "Entrar";
+  document.getElementById("trocar").textContent = modoLink ? "Voltar e entrar com senha" : "Esqueci a senha · entrar com link no e-mail";
+  document.querySelector(".sub").textContent = modoLink ? "Mandamos um link pro seu e-mail que já entra direto, sem senha." : "Use o e-mail da compra e a senha que você criou.";
+  msg.hidden = true;
+};
 document.getElementById("form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const email = document.getElementById("email").value.trim().toLowerCase();
   const btn = document.getElementById("enviar");
   msg.hidden = true; msg.className = "msg";
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { msg.textContent = "Digite um e-mail válido."; msg.classList.add("erro"); msg.hidden = false; return; }
+  if (!modoLink) {
+    btn.disabled = true; btn.textContent = "Entrando…";
+    const { error } = await SB.auth.signInWithPassword({ email, password: document.getElementById("senha").value });
+    btn.disabled = false; btn.textContent = "Entrar";
+    if (!error) return location.replace(destino);
+    msg.textContent = "E-mail ou senha incorretos. Se ainda não criou senha, toque em “Esqueci a senha”."; msg.classList.add("erro"); msg.hidden = false;
+    return;
+  }
   btn.disabled = true; btn.textContent = "Enviando…";
   try {
     const r = await chamarFuncao("enviar-acesso", { email });
