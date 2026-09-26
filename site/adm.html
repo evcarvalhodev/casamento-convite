@@ -148,6 +148,28 @@ function tabelaConvites() {
   </tr>`).join("") || `<tr><td colspan="6" class="vazio">Nenhum convite.</td></tr>`}
   </tbody></table></div>`;
 }
+let USU = null;
+function tabelaUsuarios() {
+  if (!USU) { carregarUsuarios(); return '<div class="vazio">Carregando usuários…</div>'; }
+  const q = ($("#q") && $("#q").value || "").toLowerCase();
+  const l = USU.filter(u => !q || (u.email + " " + u.nome).toLowerCase().includes(q));
+  return `<div class="tabela"><table><thead><tr><th>Usuário</th><th>Criado</th><th>Último login</th><th>Compras</th><th>Convite</th><th></th></tr></thead><tbody>
+  ${l.map(u => `<tr>
+    <td><b>${esc(u.email)}</b>${u.adm ? ' <span class="pill extra">ADM</span>' : ""}<small>${esc(u.nome)}</small></td>
+    <td class="num">${dt(u.criado_em)}</td>
+    <td class="num">${u.ultimo_login ? dt(u.ultimo_login) : "nunca"}</td>
+    <td class="num">${u.compras}</td>
+    <td>${u.convite && u.convite.slug ? `<a href="/${esc(u.convite.slug)}" target="_blank" rel="noopener">/${esc(u.convite.slug)}</a>${u.convite.publicado ? "" : "<small>fora do ar</small>"}` : "<small>ainda não montou</small>"}</td>
+    <td style="white-space:nowrap"><button class="acao" type="button" data-senha="${esc(u.email)}">Trocar senha</button>
+      ${u.adm ? "" : `<button class="acao" type="button" data-excluir="${u.id}" style="color:var(--erro)">Excluir</button>`}</td>
+  </tr>`).join("") || `<tr><td colspan="6" class="vazio">Nenhum usuário.</td></tr>`}
+  </tbody></table></div>`;
+}
+async function carregarUsuarios() {
+  try { const r = await chamarFuncao("admin", { acao: "usuarios" }, true); USU = r.usuarios; if (aba === "usuarios") { $("#tab").innerHTML = tabelaUsuarios(); ligarAcoes(); } }
+  catch (e) { toast(e.message); }
+}
+
 function formCortesia() {
   return `<div style="display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));align-items:start">
   <form class="form" id="f-conta">
@@ -170,10 +192,11 @@ function formCortesia() {
 function pintar() {
   const corpo = aba === "pedidos" ? `<div class="barra"><input id="q" placeholder="Buscar nome, e-mail ou WhatsApp"><select id="st"><option value="">Todos os status</option><option>aprovado</option><option>pendente</option><option>recusado</option><option>estornado</option></select></div><div id="tab">${tabelaPedidos()}</div>`
     : aba === "convites" ? `<div class="barra"><input id="q" placeholder="Buscar casal ou link"></div><div id="tab">${tabelaConvites()}</div>`
+    : aba === "usuarios" ? `<div class="barra"><input id="q" placeholder="Buscar e-mail ou nome"></div><div id="tab">${tabelaUsuarios()}</div>`
     : formCortesia();
-  $("#app").innerHTML = kpis() + `<div class="abas"><button data-a="pedidos" class="${aba === "pedidos" ? "on" : ""}">Pedidos</button><button data-a="convites" class="${aba === "convites" ? "on" : ""}">Convites</button><button data-a="cortesia" class="${aba === "cortesia" ? "on" : ""}">Contas</button></div><div class="painel">${corpo}</div>`;
+  $("#app").innerHTML = kpis() + `<div class="abas"><button data-a="pedidos" class="${aba === "pedidos" ? "on" : ""}">Pedidos</button><button data-a="convites" class="${aba === "convites" ? "on" : ""}">Convites</button><button data-a="usuarios" class="${aba === "usuarios" ? "on" : ""}">Usuários</button><button data-a="cortesia" class="${aba === "cortesia" ? "on" : ""}">Contas</button></div><div class="painel">${corpo}</div>`;
   document.querySelectorAll("[data-a]").forEach(b => b.onclick = () => { aba = b.dataset.a; pintar(); });
-  const refiltrar = () => { $("#tab").innerHTML = aba === "pedidos" ? tabelaPedidos() : tabelaConvites(); ligarAcoes(); };
+  const refiltrar = () => { $("#tab").innerHTML = aba === "pedidos" ? tabelaPedidos() : aba === "usuarios" ? tabelaUsuarios() : tabelaConvites(); ligarAcoes(); };
   if ($("#q")) $("#q").oninput = refiltrar;
   if ($("#st")) $("#st").onchange = refiltrar;
   ligarAcoes();
@@ -182,7 +205,7 @@ function pintar() {
     e.preventDefault();
     try {
       const r = await chamarFuncao("admin", { acao: "criar_conta", nome: $("#c-nome").value, email: $("#c-email").value, senha: $("#c-senha").value, itens: { padrinhos: $("#c-padrinhos").checked, pix: $("#c-pix").checked } }, true);
-      toast(r.mensagem); aba = "pedidos"; await carregar();
+      toast(r.mensagem); USU = null; aba = "usuarios"; await carregar();
     } catch (err) { toast(err.message); }
   };
   const fs = $("#f-senha");
@@ -198,6 +221,18 @@ function ligarAcoes() {
     try { const r = await chamarFuncao("admin", { acao: "reenviar", pedido_id: b.dataset.reenviar }, true); toast(r.mensagem); await carregar(); }
     catch (e) { toast(e.message); b.disabled = false; }
   });
+  document.querySelectorAll("[data-excluir]").forEach(b => b.onclick = async () => {
+    if (b.dataset.certeza !== "1") { b.dataset.certeza = "1"; b.textContent = "Sim, excluir"; b.style.background = "var(--erro-bg)"; setTimeout(() => { if (b.isConnected) { b.dataset.certeza = ""; b.textContent = "Excluir"; b.style.background = ""; } }, 4000); return; }
+    b.disabled = true;
+    try { const r = await chamarFuncao("admin", { acao: "excluir_usuario", user_id: b.dataset.excluir }, true); toast(r.mensagem); USU = null; D = await chamarFuncao("admin", { acao: "resumo" }, true); pintar(); }
+    catch (e) { toast(e.message); b.disabled = false; }
+  });
+  document.querySelectorAll("[data-senha]").forEach(b => b.onclick = async () => {
+    const senha = prompt("Nova senha para " + b.dataset.senha + " (mínimo 6 caracteres):");
+    if (!senha) return;
+    try { const r = await chamarFuncao("admin", { acao: "trocar_senha", email: b.dataset.senha, senha }, true); toast(r.mensagem); }
+    catch (e) { toast(e.message); }
+  });
   document.querySelectorAll("[data-publicar]").forEach(b => b.onclick = async () => {
     b.disabled = true;
     try { await chamarFuncao("admin", { acao: "publicar", convite_id: b.dataset.publicar, publicado: b.dataset.v === "1" }, true); await carregar(); }
@@ -211,7 +246,7 @@ async function carregar() {
     $("#app").innerHTML = `<div class="bloqueio"><h1>${e.message === "Acesso negado" ? "Acesso negado" : "Não carregou"}</h1><p>${e.message === "Acesso negado" ? "Este e-mail não está na lista de administradores." : esc(e.message)}</p></div>`;
   }
 }
-$("#recarregar").onclick = carregar;
+$("#recarregar").onclick = () => { USU = null; carregar(); };
 // Login do ADM por e-mail e senha (o casal entra por link no e-mail, em /entrar).
 function telaLogin() {
   $("#app").innerHTML = `<form class="login" id="f-login">

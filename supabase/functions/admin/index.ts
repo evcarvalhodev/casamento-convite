@@ -84,6 +84,43 @@ Deno.serve(async (req) => {
       return json({ ok: true, mensagem: "Senha trocada para " + email });
     }
 
+    // Lista de usuários (o "list" do painel do ViralFlow).
+    if (acao === "usuarios") {
+      const { data: lista, error } = await sb.auth.admin.listUsers({ perPage: 1000, page: 1 });
+      if (error) return json({ erro: error.message }, 500);
+      const [{ data: peds }, { data: convs }] = await Promise.all([
+        sb.from("pedidos").select("user_id, valor, status").eq("status", "aprovado").not("user_id", "is", null).limit(1000),
+        sb.from("convites").select("user_id, slug, publicado").limit(1000),
+      ]);
+      const adms = admins();
+      const usuarios = (lista?.users ?? []).map((u: any) => ({
+        id: u.id,
+        email: u.email,
+        nome: u.user_metadata?.nome ?? "",
+        criado_em: u.created_at,
+        ultimo_login: u.last_sign_in_at ?? null,
+        adm: adms.includes(String(u.email).toLowerCase()),
+        compras: (peds ?? []).filter((p: any) => p.user_id === u.id).length,
+        convite: (convs ?? []).find((c: any) => c.user_id === u.id) ?? null,
+      })).sort((x: any, y: any) => (y.criado_em > x.criado_em ? 1 : -1));
+      return json({ usuarios });
+    }
+
+    // Exclui o usuário (o "delete" do painel do ViralFlow). Vai junto: convite,
+    // confirmações e fotos. O pedido fica (é registro de venda), só perde o dono.
+    if (acao === "excluir_usuario") {
+      const uid = String(body.user_id ?? "");
+      if (!uid) return json({ erro: "user_id é obrigatório" }, 400);
+      if (uid === user.id) return json({ erro: "Você não pode excluir a própria conta." }, 400);
+      const { data: alvo } = await sb.auth.admin.getUserById(uid);
+      if (alvo?.user?.email && admins().includes(alvo.user.email.toLowerCase())) return json({ erro: "Não dá pra excluir um administrador por aqui." }, 400);
+      const { data: fotos } = await sb.storage.from("fotos").list(uid, { limit: 1000 });
+      if (fotos?.length) await sb.storage.from("fotos").remove(fotos.map((f: any) => `${uid}/${f.name}`));
+      const { error } = await sb.auth.admin.deleteUser(uid);
+      if (error) return json({ erro: error.message }, 500);
+      return json({ ok: true, mensagem: "Usuário excluído" });
+    }
+
     // Tira do ar / coloca no ar um convite (denúncia, estorno manual etc.).
     if (acao === "publicar") {
       const { error } = await sb.from("convites").update({ publicado: !!body.publicado }).eq("id", body.convite_id);
