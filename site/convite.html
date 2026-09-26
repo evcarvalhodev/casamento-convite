@@ -357,7 +357,7 @@ main { position: relative; z-index: 2; }
 [data-modelo="moderno"] .voz .mono-v { color: #111110; }
 .voz .txt { display: flex; flex-direction: column; line-height: 1.2; min-width: 0; }
 .voz .txt b { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.voz .txt span { font-size: 11px; color: var(--ink-soft); }
+.voz .txt span { font-size: 11px; color: var(--ink-soft); white-space: nowrap; }
 .voz .ondas { display: flex; align-items: center; gap: 2px; height: 18px; }
 .voz .ondas i { width: 3px; height: 4px; border-radius: 2px; background: var(--accent); }
 .voz.tocando .ondas i { animation: onda 1s ease-in-out infinite; }
@@ -918,7 +918,7 @@ function tocarVoz() {
 function pintarVoz() {
   const v = $("#voz"), tocando = !audioVoz.paused && !audioVoz.ended;
   v.classList.toggle("tocando", tocando);
-  $("#voz-estado").textContent = tocando ? "Tocando mensagem de voz" : audioVoz.ended ? "Ouvir de novo" : "Mensagem de voz";
+  $("#voz-estado").textContent = tocando ? "Tocando…" : audioVoz.ended ? "Ouvir de novo" : "Mensagem de voz";
   $("#voz-btn").innerHTML = tocando ? ICON_PAUSA : audioVoz.ended ? ICON_DENOVO : ICON_PLAY;
   $("#voz-btn").setAttribute("aria-label", tocando ? "Pausar" : "Ouvir");
 }

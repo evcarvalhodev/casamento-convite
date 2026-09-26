@@ -114,8 +114,10 @@ Deno.serve(async (req) => {
       if (uid === user.id) return json({ erro: "Você não pode excluir a própria conta." }, 400);
       const { data: alvo } = await sb.auth.admin.getUserById(uid);
       if (alvo?.user?.email && admins().includes(alvo.user.email.toLowerCase())) return json({ erro: "Não dá pra excluir um administrador por aqui." }, 400);
-      const { data: fotos } = await sb.storage.from("fotos").list(uid, { limit: 1000 });
-      if (fotos?.length) await sb.storage.from("fotos").remove(fotos.map((f: any) => `${uid}/${f.name}`));
+      for (const pasta of ["fotos", "audios"]) {
+        const { data: arqs } = await sb.storage.from(pasta).list(uid, { limit: 1000 });
+        if (arqs?.length) await sb.storage.from(pasta).remove(arqs.map((f: any) => `${uid}/${f.name}`));
+      }
       const { error } = await sb.auth.admin.deleteUser(uid);
       if (error) return json({ erro: error.message }, 500);
       return json({ ok: true, mensagem: "Usuário excluído" });
