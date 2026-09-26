@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#ffffff">
+<title>Compra Segura · Pode Abrir</title>
+<style>body { margin: 0; background: #f9fafb; }</style>
+</head>
+<body>
+<!-- Link direto do checkout (WhatsApp, anúncio). É o mesmo checkout que abre
+     por cima da página de vendas; aqui o X volta para a página de vendas. -->
+<script src="/js/checkout.js"></script>
+<script>abrirCheckout({ aoFechar: () => { location.href = "/"; } });</script>
+</body>
+</html>

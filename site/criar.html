@@ -1,0 +1,841 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f6f2eb">
+<title>Criar meu convite</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Fraunces:opsz,wght@9..144,400&family=Bodoni+Moda:opsz,wght@6..96,400&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!--INICIO-CONTEUDO-->
+<style>
+:root {
+  --bg: #f6f2eb; --card: #ffffff; --line: #e6ded1; --line-strong: #d3c7b4;
+  --ink: #2a241c; --soft: #7d7263; --faint: #a89c8a;
+  --accent: #9a7a46; --accent-ink: #ffffff; --accent-bg: #f3ead9;
+  --ok: #3f7a4f; --erro: #b3372c;
+  --display: "Instrument Serif", Georgia, serif;
+  --sans: "Manrope", system-ui, -apple-system, sans-serif;
+  --r: 14px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { -webkit-text-size-adjust: 100%; }
+body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.5; min-height: 100dvh; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+input, textarea, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+[hidden] { display: none !important; }
+
+/* ---------- estrutura ---------- */
+.app { display: grid; grid-template-columns: minmax(0, 1fr); max-width: 1180px; margin: 0 auto; }
+@media (min-width: 960px) { .app { grid-template-columns: minmax(0, 1fr) 430px; gap: 48px; padding: 0 32px; } }
+
+.topo {
+  position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  padding: calc(14px + env(safe-area-inset-top)) 16px 12px;
+}
+.topo-linha { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--soft); }
+.topo-linha b { color: var(--ink); font-weight: 600; }
+.barra { height: 4px; border-radius: 4px; background: var(--line); margin-top: 10px; overflow: hidden; }
+.barra i { display: block; height: 100%; background: var(--accent); border-radius: 4px; transition: width .4s ease; }
+
+.passos { padding: 8px 16px 140px; max-width: 620px; width: 100%; margin: 0 auto; }
+.passo { display: none; animation: entra .35s ease; }
+.passo.ativo { display: block; }
+@keyframes entra { from { opacity: 0; transform: translateY(10px); } }
+.passo h1 { font-family: var(--display); font-weight: 400; font-size: 38px; line-height: 1.05; margin-top: 18px; text-wrap: balance; }
+.passo h1 em { color: var(--accent); }
+.passo .sub { color: var(--soft); margin-top: 8px; font-size: 15px; max-width: 46ch; }
+
+.bloco { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 18px 16px; margin-top: 18px; }
+.bloco h2 { font-size: 15px; font-weight: 700; }
+.bloco h2 + .dica { margin-top: 2px; }
+.dica { font-size: 13px; color: var(--soft); }
+
+.campo { margin-top: 16px; }
+.campo:first-child, .bloco h2 + .campo, .bloco .dica + .campo { margin-top: 14px; }
+.campo label, .campo .lbl { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+.campo .opc { font-weight: 400; color: var(--faint); }
+.campo input[type=text], .campo input[type=date], .campo input[type=time], .campo textarea {
+  width: 100%; font-size: 16px; background: var(--bg); border: 1px solid var(--line); border-radius: 12px;
+  padding: 13px 14px; outline: none; -webkit-appearance: none; appearance: none; min-height: 50px;
+}
+.campo textarea { resize: vertical; min-height: 110px; line-height: 1.45; }
+.campo input:focus, .campo textarea:focus { border-color: var(--accent); background: #fff; }
+.campo .conta { font-size: 12px; color: var(--faint); text-align: right; margin-top: 4px; }
+.duas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.duas .campo { margin-top: 0; }
+.erro-campo { color: var(--erro); font-size: 13px; margin-top: 6px; }
+.invalido { border-color: var(--erro) !important; }
+
+/* ---------- modelos ---------- */
+.modelos { display: grid; gap: 12px; margin-top: 22px; }
+.modelo {
+  display: grid; grid-template-columns: 96px 1fr; gap: 16px; align-items: center; text-align: left;
+  background: var(--card); border: 1.5px solid var(--line); border-radius: 18px; padding: 12px; transition: border-color .2s, box-shadow .2s;
+}
+.modelo.on { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-bg); }
+.modelo .mini {
+  aspect-ratio: 3/4; border-radius: 48px 48px 8px 8px; display: grid; place-items: center; align-content: center; gap: 2px;
+  position: relative; overflow: hidden;
+}
+.modelo .mini span { font-size: 30px; line-height: 1; }
+.modelo .mini small { font-family: var(--sans); font-size: 7px; letter-spacing: .2em; text-transform: uppercase; opacity: .7; }
+.modelo b { display: block; font-size: 17px; font-weight: 700; }
+.modelo p { font-size: 13px; color: var(--soft); margin-top: 2px; }
+.modelo .check { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--line-strong); justify-self: end; display: grid; place-items: center; }
+.modelo.on .check { background: var(--accent); border-color: var(--accent); }
+.modelo.on .check::after { content: ""; width: 6px; height: 10px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg) translate(-1px, -1px); }
+.modelo-corpo { display: grid; grid-template-columns: 1fr 24px; align-items: center; gap: 8px; }
+.mini-classico { background: radial-gradient(90% 60% at 50% 35%, #fffcf6, #e8dfd1); color: #a8864f; font-family: "Instrument Serif", serif; font-style: italic; }
+.mini-rustico { background: radial-gradient(90% 60% at 50% 35%, #faf6ee, #d9c9ad); color: #66774f; font-family: "Fraunces", serif; }
+.mini-moderno { background: #161513; color: #cdb07a; font-family: "Bodoni Moda", serif; border-radius: 6px !important; }
+.mini-moderno small { color: #f2ede3; }
+
+/* ---------- fotos ---------- */
+.fotos { display: grid; grid-template-columns: 1.3fr 1fr; grid-template-rows: 1fr 1fr; gap: 10px; margin-top: 20px; }
+.slot {
+  position: relative; border-radius: 16px; border: 1.5px dashed var(--line-strong); background: var(--card);
+  display: grid; place-items: center; text-align: center; overflow: hidden; aspect-ratio: 3/4; width: 100%;
+  color: var(--soft); font-size: 13px; padding: 8px;
+}
+.slot.capa { grid-row: 1 / span 2; border-radius: 120px 120px 16px 16px; aspect-ratio: auto; min-height: 100%; }
+.slot:not(.capa) { aspect-ratio: auto; min-height: 150px; }
+.slot .mais { font-size: 28px; line-height: 1; color: var(--accent); display: block; margin-bottom: 6px; }
+.slot b { color: var(--ink); display: block; font-weight: 600; }
+.slot img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.slot.tem { border-style: solid; border-color: transparent; }
+.slot .acoes-foto { position: absolute; left: 8px; right: 8px; bottom: 8px; display: flex; gap: 6px; justify-content: center; }
+.slot .acoes-foto button { background: rgba(20, 16, 10, .72); color: #fff; font-size: 12px; font-weight: 600; padding: 8px 12px; border-radius: 999px; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.slot input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.slot.tem input { display: none; }
+
+/* recorte */
+.recorte { position: fixed; inset: 0; z-index: 80; background: #0f0d0a; color: #fff; display: flex; flex-direction: column; }
+.recorte header { display: flex; justify-content: space-between; align-items: center; padding: calc(12px + env(safe-area-inset-top)) 16px 12px; }
+.recorte header button { padding: 10px 6px; font-weight: 600; min-width: 64px; }
+.recorte header .ok { color: #e9cf95; text-align: right; }
+.recorte header span { font-size: 15px; font-weight: 600; }
+.recorte .area { flex: 1; display: grid; place-items: center; padding: 8px 24px; min-height: 0; }
+.moldura {
+  position: relative; height: min(100%, 62vh); aspect-ratio: 3/4; max-width: 100%; overflow: hidden;
+  border-radius: 12px; touch-action: none; background: #222; cursor: grab;
+  box-shadow: 0 0 0 9999px rgba(15, 13, 10, .6);
+}
+.moldura.arco-m { border-radius: 999px 999px 12px 12px; }
+.moldura img { position: absolute; left: 0; top: 0; transform-origin: 0 0; max-width: none; user-select: none; -webkit-user-drag: none; pointer-events: none; }
+.moldura .grade { position: absolute; inset: 0; pointer-events: none; background:
+  linear-gradient(rgba(255,255,255,.18), rgba(255,255,255,.18)) 33.33% 0 / 1px 100% no-repeat,
+  linear-gradient(rgba(255,255,255,.18), rgba(255,255,255,.18)) 66.66% 0 / 1px 100% no-repeat,
+  linear-gradient(rgba(255,255,255,.18), rgba(255,255,255,.18)) 0 33.33% / 100% 1px no-repeat,
+  linear-gradient(rgba(255,255,255,.18), rgba(255,255,255,.18)) 0 66.66% / 100% 1px no-repeat; }
+.recorte .controles { padding: 12px 20px calc(20px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 16px; }
+.recorte .zoom { display: flex; align-items: center; gap: 12px; font-size: 13px; color: #b9ae9c; }
+.recorte input[type=range] { flex: 1; accent-color: #e9cf95; height: 28px; }
+.filtros { display: flex; gap: 8px; justify-content: center; }
+.filtros button { padding: 9px 16px; border-radius: 999px; border: 1px solid #3a342b; font-size: 13px; font-weight: 600; color: #d8cfc0; }
+.filtros button.on { background: #e9cf95; color: #1b1712; border-color: #e9cf95; }
+.recorte .dica-r { text-align: center; font-size: 12px; color: #8f8575; }
+
+/* ---------- escolhas ---------- */
+.pilulas { display: flex; flex-wrap: wrap; gap: 8px; }
+.pilulas button { padding: 10px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg); font-size: 14px; font-weight: 500; min-height: 42px; }
+.pilulas button.on { border-color: var(--accent); background: var(--accent-bg); font-weight: 600; }
+
+.paletas { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+.paleta { border: 1.5px solid var(--line); border-radius: 12px; padding: 10px; text-align: left; background: var(--bg); }
+.paleta.on { border-color: var(--accent); background: var(--accent-bg); }
+.paleta .bolas { display: flex; }
+.paleta .bolas i { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--card); margin-right: -6px; }
+.paleta span { display: block; font-size: 13px; font-weight: 600; margin-top: 6px; }
+.cores-escolhidas { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 12px; }
+.cor { position: relative; width: 40px; height: 40px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(0,0,0,.1); }
+.cor button { position: absolute; top: -5px; right: -5px; width: 20px; height: 20px; border-radius: 50%; background: var(--ink); color: #fff; font-size: 12px; line-height: 20px; }
+.cor-nova { width: 40px; height: 40px; border-radius: 50%; border: 1.5px dashed var(--line-strong); display: grid; place-items: center; color: var(--soft); position: relative; overflow: hidden; font-size: 20px; }
+.cor-nova span { pointer-events: none; }
+.cor-nova input { position: absolute; -webkit-appearance: none; appearance: none; border: 0; padding: 0; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
+
+.link-previa { display: flex; align-items: center; gap: 0; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.link-previa span { padding: 13px 0 13px 14px; color: var(--faint); font-size: 15px; white-space: nowrap; }
+.link-previa input { border: 0 !important; background: transparent !important; padding-left: 2px !important; min-width: 0; }
+
+/* ---------- barra de baixo ---------- */
+.rodape-acoes {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+  background: color-mix(in srgb, var(--bg) 94%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border-top: 1px solid var(--line);
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+}
+.rodape-acoes .dentro { max-width: 620px; margin: 0 auto; display: flex; gap: 10px; }
+@media (min-width: 960px) { .rodape-acoes { position: sticky; border-top: 0; background: linear-gradient(transparent, var(--bg) 30%); } .passos { padding-bottom: 24px; } }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; padding: 0 20px; border-radius: 14px; font-weight: 700; font-size: 15px; text-decoration: none; }
+.btn.prim { background: var(--ink); color: #fff; flex: 1; }
+.btn.prim:disabled { opacity: .5; }
+.btn.sec { background: var(--card); border: 1px solid var(--line); color: var(--ink); }
+.btn.dourado { background: var(--accent); color: var(--accent-ink); }
+.btn svg { width: 18px; height: 18px; }
+.ver-previa { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, var(--line)) !important; }
+@media (min-width: 960px) { .ver-previa { display: none; } }
+
+/* ---------- prévia ---------- */
+.previa { display: none; }
+@media (min-width: 960px) {
+  .previa { display: block; position: sticky; top: 24px; align-self: start; padding-top: 24px; height: calc(100dvh - 24px); }
+  .previa .celular { width: 390px; height: min(800px, calc(100dvh - 120px)); margin: 0 auto; border-radius: 44px; border: 10px solid #1b1814; overflow: hidden; background: #000; box-shadow: 0 30px 60px -30px rgba(40, 28, 12, .5); }
+  .previa .celular iframe { width: 100%; height: 100%; border: 0; display: block; background: #fff; }
+  .previa .rev { display: flex; justify-content: center; gap: 8px; margin-top: 14px; }
+}
+.previa-cheia { position: fixed; inset: 0; z-index: 70; background: #000; display: flex; flex-direction: column; }
+.previa-cheia iframe { flex: 1; border: 0; width: 100%; background: #fff; }
+.previa-cheia .barra-p { display: flex; gap: 8px; justify-content: space-between; align-items: center; padding: calc(10px + env(safe-area-inset-top)) 12px 10px; background: #111; }
+.previa-cheia .barra-p button { color: #fff; font-weight: 600; font-size: 14px; padding: 10px 14px; border-radius: 999px; background: #2a2723; }
+.previa-cheia .barra-p .fechar { background: #fff; color: #111; }
+.chip { padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); font-size: 13px; font-weight: 600; }
+
+/* ---------- pronto ---------- */
+.pronto { text-align: center; padding-top: 24px; }
+.pronto .selo-ok { width: 72px; height: 72px; border-radius: 50%; background: var(--accent-bg); color: var(--accent); display: grid; place-items: center; margin: 12px auto 0; }
+.pronto .selo-ok svg { width: 32px; height: 32px; }
+.caixa-link { display: flex; gap: 8px; margin-top: 18px; }
+.caixa-link input { flex: 1; min-width: 0; font-size: 15px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 0 14px; min-height: 52px; }
+.pronto .acoes { display: grid; gap: 10px; margin-top: 12px; }
+.lista-conv { text-align: left; margin-top: 12px; display: grid; gap: 8px; }
+.lista-conv .item { display: flex; align-items: center; gap: 8px; background: var(--bg); border-radius: 12px; padding: 8px 8px 8px 14px; }
+.lista-conv .item span { flex: 1; font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lista-conv .item button { font-size: 13px; font-weight: 700; padding: 8px 12px; border-radius: 999px; background: var(--card); border: 1px solid var(--line); }
+.aviso { font-size: 13px; color: var(--soft); margin-top: 14px; }
+.simulado { background: #fff4d6; border: 1px solid #ecd28a; color: #6b5310; font-size: 14px; border-radius: 12px; padding: 12px 14px; margin-top: 16px; text-align: left; }
+.toast { position: fixed; left: 50%; bottom: calc(100px + env(safe-area-inset-bottom)); transform: translateX(-50%) translateY(20px); background: var(--ink); color: #fff; font-size: 14px; font-weight: 600; padding: 12px 18px; border-radius: 999px; opacity: 0; transition: .25s; z-index: 90; pointer-events: none; white-space: nowrap; }
+.toast.on { opacity: 1; transform: translateX(-50%); }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div>
+    <header class="topo" id="topo">
+      <div class="topo-linha"><span>Passo <b id="n-passo">1</b> de <span id="t-passos">6</span></span><span id="salvo">Rascunho salvo</span></div>
+      <div class="barra"><i id="barra" style="width:16%"></i></div>
+    </header>
+
+    <div class="passos">
+      <!-- 1. MODELO -->
+      <section class="passo ativo" data-passo="modelo">
+        <h1>Escolha o <em>estilo</em> do convite</h1>
+        <p class="sub">Dá pra trocar depois. A prévia mostra como fica.</p>
+        <div class="modelos" id="modelos">
+          <button class="modelo" data-modelo="classico" type="button">
+            <div class="mini mini-classico"><span>A&amp;P</span><small>Clássico</small></div>
+            <div class="modelo-corpo"><div><b>Clássico</b><p>Marfim e dourado, serifa elegante. Combina com igreja e salão.</p></div><span class="check"></span></div>
+          </button>
+          <button class="modelo" data-modelo="rustico" type="button">
+            <div class="mini mini-rustico"><span>A&amp;P</span><small>Rústico</small></div>
+            <div class="modelo-corpo"><div><b>Rústico</b><p>Envelope kraft e verde oliva. Pra casamento no campo ou ao ar livre.</p></div><span class="check"></span></div>
+          </button>
+          <button class="modelo" data-modelo="moderno" type="button">
+            <div class="mini mini-moderno"><span>A&amp;P</span><small>Moderno</small></div>
+            <div class="modelo-corpo"><div><b>Moderno</b><p>Preto e dourado, letras maiúsculas. Sofisticado e noturno.</p></div><span class="check"></span></div>
+          </button>
+        </div>
+      </section>
+
+      <!-- 2. VOCÊS -->
+      <section class="passo" data-passo="casal">
+        <h1>Sobre <em>vocês</em></h1>
+        <p class="sub">Do jeito que vocês querem que apareça no convite.</p>
+        <div class="bloco">
+          <div class="duas">
+            <div class="campo"><label for="nome1">Nome 1</label><input type="text" id="nome1" maxlength="24" autocomplete="off" autocapitalize="words" placeholder="Ana"></div>
+            <div class="campo"><label for="nome2">Nome 2</label><input type="text" id="nome2" maxlength="24" autocomplete="off" autocapitalize="words" placeholder="Pedro"></div>
+          </div>
+          <p class="dica" style="margin-top:8px">Só o primeiro nome fica mais bonito.</p>
+        </div>
+        <div class="bloco">
+          <h2>Quando é o casamento?</h2>
+          <div class="duas" style="margin-top:14px">
+            <div class="campo"><label for="data">Data</label><input type="date" id="data"></div>
+            <div class="campo"><label for="hora">Horário</label><input type="time" id="hora"></div>
+          </div>
+        </div>
+        <div class="bloco">
+          <div class="campo"><label for="intro">Frase acima da foto <span class="opc">(opcional)</span></label><input type="text" id="intro" maxlength="40" placeholder="O casamento de"></div>
+        </div>
+      </section>
+
+      <!-- 3. FOTOS -->
+      <section class="passo" data-passo="fotos">
+        <h1>As <em>fotos</em> de vocês</h1>
+        <p class="sub">A primeira vai na capa. As outras duas aparecem no meio do convite. Você ajusta o enquadramento depois de escolher.</p>
+        <div class="fotos" id="fotos"></div>
+        <p class="dica" style="margin-top:14px">Dica: fotos na vertical, com o rosto de vocês bem visível, ficam melhores na capa.</p>
+      </section>
+
+      <!-- 4. LOCAIS -->
+      <section class="passo" data-passo="locais">
+        <h1>Onde vai <em>ser?</em></h1>
+        <p class="sub">O convidado toca em "Como chegar" e o mapa abre direto no celular.</p>
+        <div class="bloco">
+          <h2>Cerimônia</h2>
+          <div class="campo"><label for="c-nome">Nome do local</label><input type="text" id="c-nome" maxlength="60" placeholder="Paróquia Nossa Senhora do Brasil"></div>
+          <div class="campo"><label for="c-end">Endereço</label><input type="text" id="c-end" maxlength="140" placeholder="Rua, número, bairro, cidade"></div>
+        </div>
+        <div class="bloco">
+          <h2>Recepção</h2>
+          <div class="campo"><div class="pilulas" id="rec-tipo">
+            <button type="button" data-v="outro">Em outro lugar</button>
+            <button type="button" data-v="mesmo">No mesmo lugar</button>
+            <button type="button" data-v="nao">Não vai ter</button>
+          </div></div>
+          <div id="rec-campos">
+            <div class="campo"><label for="r-nome">Nome do local</label><input type="text" id="r-nome" maxlength="60" placeholder="Espaço Villa Jardim"></div>
+            <div class="campo"><label for="r-end">Endereço</label><input type="text" id="r-end" maxlength="140" placeholder="Rua, número, bairro, cidade"></div>
+          </div>
+          <div class="campo" id="rec-hora-c"><label for="r-hora">Horário da recepção</label><input type="time" id="r-hora"></div>
+        </div>
+      </section>
+
+      <!-- 5. DETALHES -->
+      <section class="passo" data-passo="detalhes">
+        <h1>Os <em>detalhes</em></h1>
+        <p class="sub">Tudo aqui é opcional. O que ficar em branco não aparece no convite.</p>
+        <div class="bloco">
+          <h2>Uma mensagem para os convidados</h2>
+          <p class="dica">No convite, ela vai acendendo palavra por palavra enquanto a pessoa rola a tela.</p>
+          <div class="campo"><textarea id="mensagem" maxlength="280" placeholder="Depois de sete anos juntos, chegou o dia de dizer sim na frente de quem a gente mais ama."></textarea><div class="conta" id="conta-msg">0/280</div></div>
+        </div>
+        <div class="bloco">
+          <h2>Traje</h2>
+          <div class="campo"><div class="pilulas" id="traje-tipo">
+            <button type="button" data-v="Passeio">Passeio</button>
+            <button type="button" data-v="Esporte fino">Esporte fino</button>
+            <button type="button" data-v="Social">Social</button>
+            <button type="button" data-v="Black tie">Black tie</button>
+            <button type="button" data-v="">Sem traje</button>
+          </div></div>
+          <div class="campo"><span class="lbl">Paleta de cores sugerida <span class="opc">(opcional)</span></span>
+            <div class="paletas" id="paletas"></div>
+            <div class="cores-escolhidas" id="cores"></div>
+          </div>
+          <div class="campo"><label for="evitar">Recado sobre o traje <span class="opc">(opcional)</span></label><input type="text" id="evitar" maxlength="90" placeholder="Pedimos com carinho que evitem o branco."></div>
+        </div>
+      </section>
+
+      <!-- 6. LINK -->
+      <section class="passo" data-passo="link">
+        <h1>Quase <em>pronto</em></h1>
+        <p class="sub">Falta escolher o endereço do convite e até quando os convidados podem confirmar.</p>
+        <div class="bloco">
+          <h2>Confirmar presença até</h2>
+          <p class="dica">Aparece no convite. Depois dessa data o formulário continua aberto, mas vocês já sabem quantos vêm.</p>
+          <div class="campo"><input type="date" id="rsvp-ate" aria-label="Confirmar presença até"></div>
+        </div>
+        <div class="bloco">
+          <h2>Endereço do convite</h2>
+          <p class="dica">É o link que vocês mandam no WhatsApp.</p>
+          <div class="campo"><div class="link-previa"><span id="dominio">podeabrir.com.br/</span><input type="text" id="slug" maxlength="40" autocapitalize="none" autocorrect="off" spellcheck="false" aria-label="Endereço"></div>
+          <p class="erro-campo" id="slug-erro" hidden></p></div>
+        </div>
+      </section>
+
+      <!-- PRONTO -->
+      <section class="passo pronto" data-passo="pronto">
+        <div class="selo-ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+        <h1>Seu convite está <em>no ar</em></h1>
+        <p class="sub" style="margin:8px auto 0">Mande o link no WhatsApp. Quem confirmar aparece no seu painel.</p>
+        <p class="simulado" id="aviso-simulado" hidden>Modo de teste: o convite ainda não foi publicado de verdade, então o link acima não abre. Toque em "Abrir o convite" para ver como ele fica.</p>
+        <div class="caixa-link"><input type="text" id="link-final" readonly aria-label="Link do convite"><button class="btn sec" id="copiar" type="button">Copiar</button></div>
+        <div class="acoes">
+          <a class="btn dourado" id="whats" href="#" target="_blank" rel="noopener">Enviar no WhatsApp</a>
+          <a class="btn sec" id="abrir-convite" href="#" target="_blank" rel="noopener">Abrir o convite</a>
+        </div>
+        <div class="bloco" style="text-align:left">
+          <h2>Convite com o nome do convidado</h2>
+          <p class="dica">O nome aparece no envelope, e a pessoa não precisa digitar na hora de confirmar.</p>
+          <div class="campo" style="display:flex;gap:8px"><input type="text" id="nome-conv" placeholder="Ex.: Tia Marta" maxlength="60" aria-label="Nome do convidado"><button class="btn sec" id="add-conv" type="button">Criar</button></div>
+          <div class="lista-conv" id="lista-conv"></div>
+        </div>
+        <p class="aviso">Precisa mudar algo? Toque em "Editar" e publique de novo. O link continua o mesmo.</p>
+        <div class="acoes" style="margin-top:12px"><a class="btn prim" href="/painel" id="ir-painel">Ver quem confirmou</a><button class="btn sec" id="editar" type="button">Editar convite</button></div>
+      </section>
+    </div>
+<div class="rodape-acoes" id="rodape">
+      <div class="dentro">
+        <button class="btn sec" id="voltar" type="button" aria-label="Voltar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <button class="btn sec ver-previa" id="ver-previa" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>Prévia</button>
+        <button class="btn prim" id="seguir" type="button">Continuar</button>
+      </div>
+    </div>
+  </div>
+
+  <aside class="previa" aria-label="Prévia do convite">
+    <div class="celular"><iframe id="previa-desk" title="Prévia do convite"></iframe></div>
+    <div class="rev"><button class="chip" type="button" data-rever="desk">Ver abrindo o envelope</button></div>
+  </aside>
+</div>
+
+
+<div class="previa-cheia" id="previa-cheia" hidden>
+  <div class="barra-p"><button type="button" data-rever="cheia">Ver abrindo o envelope</button><button class="fechar" id="fechar-previa" type="button">Voltar a editar</button></div>
+  <iframe id="previa-mob" title="Prévia do convite"></iframe>
+</div>
+
+<div class="recorte" id="recorte" hidden>
+  <header><button type="button" id="rc-cancelar">Cancelar</button><span>Ajustar foto</span><button type="button" class="ok" id="rc-ok">Usar</button></header>
+  <div class="area"><div class="moldura" id="moldura"><img id="rc-img" alt=""><div class="grade"></div></div></div>
+  <div class="controles">
+    <div class="zoom"><span>−</span><input type="range" id="rc-zoom" min="1" max="3" step="0.01" value="1" aria-label="Zoom"><span>+</span></div>
+    <div class="filtros" id="rc-filtros"><button type="button" data-f="" class="on">Original</button><button type="button" data-f="pb">Preto e branco</button><button type="button" data-f="sepia">Sépia</button></div>
+    <p class="dica-r">Arraste para posicionar. Use dois dedos ou a barra para aproximar.</p>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="/js/config.js"></script>
+<script src="/js/api.js"></script>
+
+<script>
+/* ============ CONFIG ============ */
+const DOMINIO = (window.CONFIG && window.CONFIG.DOMINIO) || "podeabrir.com.br/";
+const CONVITE_URL = "convite.html"; // em produção: /<slug>
+
+/* Em produção, o arquivo js/api.js troca isto por Supabase. */
+window.API = window.API || {
+  async slugLivre(slug) { return slug !== "ana-e-pedro-teste"; },
+  async publicar(convite, fotos) { await new Promise(r => setTimeout(r, 900)); return { url: "https://" + DOMINIO + convite.slug, simulado: true }; }
+};
+
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const esc = (t) => String(t ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+const PALETAS = [
+  { nome: "Terrosos", cores: ["#c9b99b", "#8a9a7b", "#6d5a4a", "#e8d9c4"] },
+  { nome: "Verde oliva", cores: ["#6f7f5c", "#a3ad8a", "#d9d2bd", "#4e5a3d"] },
+  { nome: "Azul serenity", cores: ["#9fb4cf", "#c9d6e6", "#5d7599", "#e9eef5"] },
+  { nome: "Rosé", cores: ["#d8a7a0", "#ecd3cd", "#a9706a", "#f5e8e4"] },
+  { nome: "Terracota", cores: ["#c46b4b", "#e0a887", "#8c4a36", "#f1dccb"] },
+  { nome: "Noite", cores: ["#1f2433", "#4a3f5c", "#8c7a5b", "#2f3b36"] }
+];
+
+/* ============ ESTADO ============ */
+const S = {
+  modelo: "classico", nome1: "", nome2: "", data: "", hora: "16:00", intro: "",
+  cerimonia: { nome: "", endereco: "" },
+  recTipo: "outro", recepcao: { nome: "", endereco: "", hora: "" },
+  mensagem: "", traje: { texto: "Esporte fino", cores: [], evitar: "" },
+  rsvp_ate: "", slug: "", slugManual: false,
+  fotos: [null, null, null], // { url (blob), blob, filtro }
+  publicado: null, convidados: []
+};
+const CHAVE = "convite-rascunho";
+
+function salvarRascunho() {
+  try {
+    const { fotos, ...resto } = S;
+    resto.fotosRemotas = S.fotos.map(f => f && f.remota && !f.blob ? f.url : null);
+    localStorage.setItem(CHAVE, JSON.stringify(resto));
+    $("#salvo").textContent = "Rascunho salvo";
+  } catch (_) {}
+  guardarFotos();
+}
+function lerRascunho() {
+  try { const r = JSON.parse(localStorage.getItem(CHAVE) || "null"); if (r) Object.assign(S, r, { fotos: [null, null, null] }); if (S.publicado && S.simulado === undefined) S.simulado = true; } catch (_) {}
+}
+
+/* fotos no IndexedDB, pra não perder se a página recarregar */
+const idb = () => new Promise((ok, erro) => { const r = indexedDB.open("convite", 1); r.onupgradeneeded = () => r.result.createObjectStore("fotos"); r.onsuccess = () => ok(r.result); r.onerror = erro; });
+async function guardarFotos() {
+  try { const db = await idb(); const tx = db.transaction("fotos", "readwrite"); S.fotos.forEach((f, i) => f && f.blob ? tx.objectStore("fotos").put({ blob: f.blob, filtro: f.filtro }, i) : tx.objectStore("fotos").delete(i)); } catch (_) {}
+}
+async function lerFotos() {
+  try {
+    const db = await idb();
+    await Promise.all([0, 1, 2].map(i => new Promise(ok => {
+      const r = db.transaction("fotos").objectStore("fotos").get(i);
+      r.onsuccess = () => { if (r.result) S.fotos[i] = { ...r.result, url: URL.createObjectURL(r.result.blob) }; ok(); };
+      r.onerror = ok;
+    })));
+  } catch (_) {}
+}
+
+/* ============ CONVITE A PARTIR DO ESTADO ============ */
+const nomeOu = (v, p) => (v || "").trim() || p;
+function paraConvite() {
+  const hoje = new Date(); hoje.setMonth(hoje.getMonth() + 6);
+  const data = S.data || hoje.toISOString().slice(0, 10);
+  const hora = S.hora || "16:00";
+  const rec = S.recTipo === "nao" ? null
+    : S.recTipo === "mesmo" ? { nome: "No mesmo local", endereco: "", hora: S.recepcao.hora || "" }
+    : { nome: S.recepcao.nome, endereco: S.recepcao.endereco, hora: S.recepcao.hora || "" };
+  return {
+    slug: S.slug || "previa",
+    modelo: S.modelo,
+    nome1: nomeOu(S.nome1, "Ana"), nome2: nomeOu(S.nome2, "Pedro"),
+    data: `${data}T${hora}`,
+    intro: nomeOu(S.intro, "O casamento de"),
+    mensagem: S.mensagem.trim(),
+    fotos: S.fotos.filter(Boolean).map(f => f.url),
+    cerimonia: { nome: nomeOu(S.cerimonia.nome, "Local da cerimônia"), endereco: S.cerimonia.endereco.trim(), hora },
+    recepcao: rec && (rec.nome || rec.endereco) ? rec : null,
+    traje: { texto: S.traje.texto, cores: S.traje.cores, evitar: S.traje.evitar.trim() },
+    rsvp_ate: S.rsvp_ate,
+    musica: ""
+  };
+}
+
+/* ============ PRÉVIA ============ */
+const quadros = { desk: $("#previa-desk"), mob: $("#previa-mob") };
+const prontos = new Set();
+let fechadoNaProxima = { desk: false, mob: false };
+function enviarPrevia(qual) {
+  const alvos = qual ? [qual] : Object.keys(quadros);
+  alvos.forEach(k => {
+    if (!prontos.has(k)) return;
+    const aberto = !fechadoNaProxima[k];
+    fechadoNaProxima[k] = false;
+    quadros[k].contentWindow.postMessage({ tipo: "dados", convite: paraConvite(), aberto }, location.origin);
+  });
+}
+let tPrevia = null;
+const atualizarPrevia = () => { clearTimeout(tPrevia); tPrevia = setTimeout(() => enviarPrevia(), 250); };
+window.addEventListener("message", (ev) => {
+  if (ev.origin !== location.origin || !ev.data || ev.data.tipo !== "pronto") return;
+  const k = Object.keys(quadros).find(k => quadros[k].contentWindow === ev.source);
+  if (k) { prontos.add(k); enviarPrevia(k); }
+});
+function carregarPrevia(k) { if (!quadros[k].src) quadros[k].src = CONVITE_URL + "?previa=1"; }
+if (matchMedia("(min-width: 960px)").matches) carregarPrevia("desk");
+$("#ver-previa").onclick = () => { carregarPrevia("mob"); $("#previa-cheia").hidden = false; document.body.style.overflow = "hidden"; enviarPrevia("mob"); };
+$("#fechar-previa").onclick = () => { $("#previa-cheia").hidden = true; document.body.style.overflow = ""; };
+$$("[data-rever]").forEach(b => b.onclick = () => { const k = b.dataset.rever === "desk" ? "desk" : "mob"; fechadoNaProxima[k] = true; enviarPrevia(k); });
+
+/* ============ PASSOS ============ */
+const PASSOS = ["modelo", "casal", "fotos", "locais", "detalhes", "link"];
+let atual = 0;
+function irPara(i) {
+  atual = Math.max(0, Math.min(i, PASSOS.length));
+  const nome = atual === PASSOS.length ? "pronto" : PASSOS[atual];
+  $$(".passo").forEach(p => p.classList.toggle("ativo", p.dataset.passo === nome));
+  const fim = nome === "pronto";
+  $("#topo").hidden = fim; $("#rodape").hidden = fim;
+  $("#n-passo").textContent = atual + 1;
+  $("#barra").style.width = ((atual + 1) / PASSOS.length * 100) + "%";
+  $("#voltar").style.visibility = atual === 0 ? "hidden" : "visible";
+  $("#seguir").textContent = atual === PASSOS.length - 1 ? "Publicar convite" : "Continuar";
+  window.scrollTo({ top: 0 });
+  if (nome === "link") sugerirSlug();
+}
+$("#t-passos").textContent = PASSOS.length;
+$("#voltar").onclick = () => irPara(atual - 1);
+$("#seguir").onclick = async () => {
+  if (!validar(PASSOS[atual])) return;
+  if (atual === PASSOS.length - 1) return publicar();
+  irPara(atual + 1);
+};
+
+function marcaErro(el, msg) {
+  el.classList.add("invalido");
+  let p = el.parentNode.querySelector(".erro-campo.auto");
+  if (!p) { p = document.createElement("p"); p.className = "erro-campo auto"; el.parentNode.appendChild(p); }
+  p.textContent = msg;
+  el.addEventListener("input", () => { el.classList.remove("invalido"); p.remove(); }, { once: true });
+  return false;
+}
+function validar(passo) {
+  let ok = true;
+  if (passo === "casal") {
+    if (!S.nome1.trim()) ok = marcaErro($("#nome1"), "Escreva o primeiro nome.");
+    if (!S.nome2.trim()) ok = marcaErro($("#nome2"), "Escreva o segundo nome.");
+    if (!S.data) ok = marcaErro($("#data"), "Escolha a data.");
+    else if (new Date(S.data + "T23:59") < new Date()) ok = marcaErro($("#data"), "Essa data já passou.");
+    if (!S.hora) ok = marcaErro($("#hora"), "Escolha o horário.");
+  }
+  if (passo === "fotos" && !S.fotos[0]) { toast("Coloque pelo menos a foto da capa"); ok = false; }
+  if (passo === "locais") {
+    if (!S.cerimonia.nome.trim()) ok = marcaErro($("#c-nome"), "Escreva o nome do local.");
+    if (!S.cerimonia.endereco.trim()) ok = marcaErro($("#c-end"), "Sem endereço o botão \"Como chegar\" não funciona.");
+    if (S.recTipo === "outro" && !S.recepcao.nome.trim()) ok = marcaErro($("#r-nome"), "Escreva o nome do local da recepção.");
+  }
+  if (passo === "link" && !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(S.slug)) { $("#slug-erro").textContent = "Use só letras, números e hífen."; $("#slug-erro").hidden = false; ok = false; }
+  if (!ok) { const e = $(".invalido"); e && e.scrollIntoView({ block: "center", behavior: "smooth" }); }
+  return ok;
+}
+
+/* ============ CAMPOS ============ */
+function ligar(id, get, set) {
+  const el = $("#" + id);
+  el.value = get() || "";
+  el.addEventListener("input", () => { set(el.value); salvarRascunho(); atualizarPrevia(); });
+}
+ligar("nome1", () => S.nome1, v => S.nome1 = v);
+ligar("nome2", () => S.nome2, v => S.nome2 = v);
+ligar("data", () => S.data, v => { S.data = v; if (!S.rsvp_ate) sugerirPrazo(); });
+ligar("hora", () => S.hora, v => S.hora = v);
+ligar("intro", () => S.intro, v => S.intro = v);
+ligar("c-nome", () => S.cerimonia.nome, v => S.cerimonia.nome = v);
+ligar("c-end", () => S.cerimonia.endereco, v => S.cerimonia.endereco = v);
+ligar("r-nome", () => S.recepcao.nome, v => S.recepcao.nome = v);
+ligar("r-end", () => S.recepcao.endereco, v => S.recepcao.endereco = v);
+ligar("r-hora", () => S.recepcao.hora, v => S.recepcao.hora = v);
+ligar("mensagem", () => S.mensagem, v => { S.mensagem = v; $("#conta-msg").textContent = v.length + "/280"; });
+ligar("evitar", () => S.traje.evitar, v => S.traje.evitar = v);
+ligar("rsvp-ate", () => S.rsvp_ate, v => S.rsvp_ate = v);
+ligar("slug", () => S.slug, v => { S.slug = limparSlug(v, true); S.slugManual = true; $("#slug").value = S.slug; $("#slug-erro").hidden = true; });
+$("#conta-msg").textContent = S.mensagem.length + "/280";
+
+function sugerirPrazo() {
+  if (!S.data) return;
+  const d = new Date(S.data + "T12:00"); d.setDate(d.getDate() - 30);
+  S.rsvp_ate = d.toISOString().slice(0, 10); $("#rsvp-ate").value = S.rsvp_ate;
+}
+
+/* modelo */
+function pintarModelos() { $$(".modelo").forEach(b => b.classList.toggle("on", b.dataset.modelo === S.modelo)); }
+$$(".modelo").forEach(b => b.onclick = () => { S.modelo = b.dataset.modelo; pintarModelos(); salvarRascunho(); atualizarPrevia(); });
+
+/* pílulas */
+function pilulas(id, get, set, depois) {
+  const box = $("#" + id);
+  const pinta = () => $$("button", box).forEach(b => b.classList.toggle("on", b.dataset.v === get()));
+  $$("button", box).forEach(b => b.onclick = () => { set(b.dataset.v); pinta(); depois && depois(); salvarRascunho(); atualizarPrevia(); });
+  pinta(); depois && depois();
+}
+pilulas("rec-tipo", () => S.recTipo, v => S.recTipo = v, () => {
+  $("#rec-campos").hidden = S.recTipo !== "outro";
+  $("#rec-hora-c").hidden = S.recTipo === "nao";
+});
+pilulas("traje-tipo", () => S.traje.texto, v => S.traje.texto = v);
+
+/* paletas e cores */
+function pintarCores() {
+  $("#paletas").innerHTML = PALETAS.map((p, i) => `<button type="button" class="paleta ${JSON.stringify(p.cores) === JSON.stringify(S.traje.cores) ? "on" : ""}" data-i="${i}"><div class="bolas">${p.cores.map(c => `<i style="background:${c}"></i>`).join("")}</div><span>${p.nome}</span></button>`).join("");
+  $$("#paletas .paleta").forEach(b => b.onclick = () => {
+    const p = PALETAS[b.dataset.i].cores;
+    S.traje.cores = JSON.stringify(p) === JSON.stringify(S.traje.cores) ? [] : [...p];
+    pintarCores(); salvarRascunho(); atualizarPrevia();
+  });
+  $("#cores").innerHTML = S.traje.cores.map((c, i) => `<span class="cor" style="background:${esc(c)}"><button type="button" data-i="${i}" aria-label="Tirar cor">×</button></span>`).join("")
+    + (S.traje.cores.length < 6 ? `<label class="cor-nova" title="Adicionar cor"><span aria-hidden="true">+</span><input type="color" id="cor-nova" value="#c9b99b" aria-label="Adicionar cor"></label>` : "");
+  $$("#cores .cor button").forEach(b => b.onclick = () => { S.traje.cores.splice(Number(b.dataset.i), 1); pintarCores(); salvarRascunho(); atualizarPrevia(); });
+  const nova = $("#cor-nova");
+  if (nova) nova.addEventListener("change", () => { S.traje.cores.push(nova.value); pintarCores(); salvarRascunho(); atualizarPrevia(); });
+}
+
+/* endereço (slug) */
+function limparSlug(t, digitando) {
+  let s = String(t).normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/&/g, "e").replace(/[^a-z0-9]+/g, "-");
+  if (!digitando) s = s.replace(/^-+|-+$/g, "");
+  return s.slice(0, 40);
+}
+function sugerirSlug() {
+  if (!S.slugManual || !S.slug) S.slug = limparSlug(`${S.nome1} e ${S.nome2}`);
+  $("#slug").value = S.slug;
+  if (!S.rsvp_ate) sugerirPrazo();
+}
+$("#dominio").textContent = DOMINIO;
+
+/* ============ FOTOS ============ */
+const ROTULOS = ["Foto da capa", "Foto 2", "Foto 3"];
+function pintarFotos() {
+  $("#fotos").innerHTML = S.fotos.map((f, i) => `
+    <div class="slot ${i === 0 ? "capa" : ""} ${f ? "tem" : ""}">
+      ${f ? `<img src="${f.url}" alt="${ROTULOS[i]}"><div class="acoes-foto"><button type="button" data-ajustar="${i}">Ajustar</button><button type="button" data-tirar="${i}">Trocar</button></div>`
+          : `<div><span class="mais">+</span><b>${ROTULOS[i]}</b>${i === 0 ? "obrigatória" : "opcional"}</div>`}
+      <input type="file" accept="image/*" data-i="${i}" aria-label="${ROTULOS[i]}">
+    </div>`).join("");
+  $$("#fotos input[type=file]").forEach(inp => inp.onchange = () => { const f = inp.files[0]; inp.value = ""; if (f) abrirRecorte(Number(inp.dataset.i), f); });
+  $$("[data-tirar]").forEach(b => b.onclick = () => {
+    const i = Number(b.dataset.tirar);
+    const inp = document.createElement("input"); inp.type = "file"; inp.accept = "image/*";
+    inp.onchange = () => inp.files[0] && abrirRecorte(i, inp.files[0]);
+    inp.click();
+  });
+  $$("[data-ajustar]").forEach(b => b.onclick = async () => { const i = Number(b.dataset.ajustar); const f = S.fotos[i]; abrirRecorte(i, f.original || f.blob || await (await fetch(f.url)).blob()); });
+}
+
+/* ---------- recorte ----------
+   Moldura 3:4. A imagem sempre cobre a moldura; arrasta pra posicionar, pinça ou barra pra zoom.
+   Exporta 1080x1440 em JPEG, com o filtro aplicado nos pixels. */
+const RC = { i: 0, arquivo: null, img: $("#rc-img"), w: 0, h: 0, W: 0, H: 0, base: 1, zoom: 1, x: 0, y: 0, filtro: "" };
+const moldura = $("#moldura");
+
+async function abrirRecorte(i, arquivo) {
+  RC.i = i; RC.arquivo = arquivo; RC.filtro = (S.fotos[i] && S.fotos[i].filtro) || "";
+  moldura.classList.toggle("arco-m", i === 0 && S.modelo !== "moderno");
+  const url = URL.createObjectURL(arquivo);
+  RC.img.src = url;
+  try { await RC.img.decode(); } catch (_) { toast("Não consegui abrir essa foto. Tente outra."); return; }
+  $("#recorte").hidden = false; document.body.style.overflow = "hidden";
+  requestAnimationFrame(() => {
+    RC.w = RC.img.naturalWidth; RC.h = RC.img.naturalHeight;
+    RC.W = moldura.clientWidth; RC.H = moldura.clientHeight;
+    RC.base = Math.max(RC.W / RC.w, RC.H / RC.h);
+    RC.zoom = 1; $("#rc-zoom").value = 1;
+    RC.x = (RC.W - RC.w * RC.base) / 2; RC.y = (RC.H - RC.h * RC.base) / 2;
+    pintarFiltro(); desenhar();
+  });
+}
+function prender() {
+  const s = RC.base * RC.zoom;
+  RC.x = Math.min(0, Math.max(RC.W - RC.w * s, RC.x));
+  RC.y = Math.min(0, Math.max(RC.H - RC.h * s, RC.y));
+}
+function desenhar() {
+  prender();
+  const s = RC.base * RC.zoom;
+  RC.img.style.width = RC.w + "px"; RC.img.style.height = RC.h + "px";
+  RC.img.style.transform = `translate(${RC.x}px, ${RC.y}px) scale(${s})`;
+  RC.img.style.filter = RC.filtro === "pb" ? "grayscale(1)" : RC.filtro === "sepia" ? "sepia(.75)" : "none";
+}
+function zoomEm(novo, cx, cy) {
+  novo = Math.min(3, Math.max(1, novo));
+  const s0 = RC.base * RC.zoom, s1 = RC.base * novo;
+  RC.x = cx - (cx - RC.x) * (s1 / s0); RC.y = cy - (cy - RC.y) * (s1 / s0);
+  RC.zoom = novo; $("#rc-zoom").value = novo; desenhar();
+}
+$("#rc-zoom").oninput = (e) => zoomEm(Number(e.target.value), RC.W / 2, RC.H / 2);
+
+const toques = new Map(); let pinca = null;
+moldura.addEventListener("pointerdown", (e) => { moldura.setPointerCapture(e.pointerId); toques.set(e.pointerId, { x: e.clientX, y: e.clientY }); if (toques.size === 2) iniciaPinca(); });
+moldura.addEventListener("pointermove", (e) => {
+  if (!toques.has(e.pointerId)) return;
+  const antes = toques.get(e.pointerId);
+  toques.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (toques.size === 1) { RC.x += e.clientX - antes.x; RC.y += e.clientY - antes.y; desenhar(); }
+  else if (pinca) {
+    const [a, b] = [...toques.values()];
+    const d = Math.hypot(a.x - b.x, a.y - b.y);
+    const r = moldura.getBoundingClientRect();
+    zoomEm(pinca.zoom * d / pinca.d, (a.x + b.x) / 2 - r.left, (a.y + b.y) / 2 - r.top);
+  }
+});
+const soltar = (e) => { toques.delete(e.pointerId); if (toques.size < 2) pinca = null; };
+moldura.addEventListener("pointerup", soltar); moldura.addEventListener("pointercancel", soltar);
+function iniciaPinca() { const [a, b] = [...toques.values()]; pinca = { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, zoom: RC.zoom }; }
+moldura.addEventListener("wheel", (e) => { e.preventDefault(); const r = moldura.getBoundingClientRect(); zoomEm(RC.zoom * (e.deltaY < 0 ? 1.08 : 0.93), e.clientX - r.left, e.clientY - r.top); }, { passive: false });
+
+function pintarFiltro() { $$("#rc-filtros button").forEach(b => b.classList.toggle("on", b.dataset.f === RC.filtro)); }
+$$("#rc-filtros button").forEach(b => b.onclick = () => { RC.filtro = b.dataset.f; pintarFiltro(); desenhar(); });
+
+function fecharRecorte() { $("#recorte").hidden = true; document.body.style.overflow = ""; URL.revokeObjectURL(RC.img.src); }
+$("#rc-cancelar").onclick = fecharRecorte;
+$("#rc-ok").onclick = async () => {
+  const s = RC.base * RC.zoom;
+  const cv = document.createElement("canvas"); cv.width = 1080; cv.height = 1440;
+  const ctx = cv.getContext("2d");
+  ctx.drawImage(RC.img, -RC.x / s, -RC.y / s, RC.W / s, RC.H / s, 0, 0, 1080, 1440);
+  if (RC.filtro) aplicarFiltro(ctx, RC.filtro);
+  const blob = await new Promise(ok => cv.toBlob(ok, "image/jpeg", 0.82));
+  const antiga = S.fotos[RC.i];
+  if (antiga && antiga.url) URL.revokeObjectURL(antiga.url);
+  S.fotos[RC.i] = { blob, url: URL.createObjectURL(blob), filtro: RC.filtro, original: RC.arquivo };
+  fecharRecorte(); pintarFotos(); salvarRascunho(); atualizarPrevia();
+};
+function aplicarFiltro(ctx, f) {
+  const im = ctx.getImageData(0, 0, 1080, 1440), d = im.data;
+  for (let p = 0; p < d.length; p += 4) {
+    const r = d[p], g = d[p + 1], b = d[p + 2];
+    if (f === "pb") { const y = .299 * r + .587 * g + .114 * b; d[p] = d[p + 1] = d[p + 2] = y; }
+    else { // sépia suave (75%)
+      const sr = .393 * r + .769 * g + .189 * b, sg = .349 * r + .686 * g + .168 * b, sb = .272 * r + .534 * g + .131 * b;
+      d[p] = Math.min(255, r * .25 + sr * .75); d[p + 1] = Math.min(255, g * .25 + sg * .75); d[p + 2] = Math.min(255, b * .25 + sb * .75);
+    }
+  }
+  ctx.putImageData(im, 0, 0);
+}
+
+/* ============ PUBLICAR ============ */
+async function publicar() {
+  const btn = $("#seguir");
+  btn.disabled = true; btn.textContent = "Conferindo o endereço…";
+  try {
+    if (!(await API.slugLivre(S.slug))) {
+      $("#slug-erro").textContent = "Esse endereço já está em uso. Tente outro, como " + S.slug + "-" + (S.data || "").slice(0, 4) + ".";
+      $("#slug-erro").hidden = false; return;
+    }
+    btn.textContent = "Publicando…";
+    const { fotos, publicado, simulado, ...editor } = S;
+    const r = await API.publicar(paraConvite(), S.fotos.filter(Boolean), editor);
+    S.publicado = r.url; S.simulado = !!r.simulado; salvarRascunho();
+    mostrarPronto(); irPara(PASSOS.length);
+  } catch (e) {
+    console.error(e);
+    if (e && e.codigo === "slug") { $("#slug-erro").textContent = "Esse endereço acabou de ser usado por outro casal. Tente outro."; $("#slug-erro").hidden = false; return; }
+    toast("Não deu pra publicar agora. Confira a internet e tente de novo.");
+  } finally {
+    btn.disabled = false; btn.textContent = "Publicar convite";
+  }
+}
+function linkPara(nome) { return S.publicado + (nome ? "?para=" + encodeURIComponent(nome) : ""); }
+function textoWhats(nome) {
+  return `${nome ? nome + ", v" : "V"}ocê está convidado para o nosso casamento! 💍\nAbra o convite: ${linkPara(nome)}`;
+}
+function mostrarPronto() {
+  $("#link-final").value = S.publicado;
+  $("#whats").href = "https://wa.me/?text=" + encodeURIComponent(textoWhats(""));
+  $("#abrir-convite").href = S.publicado;
+  $("#aviso-simulado").hidden = !S.simulado;
+  $("#abrir-convite").onclick = S.simulado ? (e) => { e.preventDefault(); carregarPrevia("mob"); fechadoNaProxima.mob = true; $("#previa-cheia").hidden = false; document.body.style.overflow = "hidden"; enviarPrevia("mob"); } : null;
+  pintarConvidados();
+}
+async function copiar(t) {
+  try { await navigator.clipboard.writeText(t); toast("Link copiado"); }
+  catch (_) { const i = $("#link-final"); i.value = t; i.select(); toast("Selecionado. Toque em Copiar no menu."); }
+}
+$("#copiar").onclick = () => copiar(S.publicado);
+$("#add-conv").onclick = () => {
+  const n = $("#nome-conv").value.trim(); if (!n) return;
+  S.convidados.unshift(n); $("#nome-conv").value = ""; salvarRascunho(); pintarConvidados();
+};
+$("#nome-conv").addEventListener("keydown", (e) => { if (e.key === "Enter") $("#add-conv").click(); });
+function pintarConvidados() {
+  $("#lista-conv").innerHTML = S.convidados.map((n, i) => `<div class="item"><span>${esc(n)}</span><button type="button" data-copiar="${i}">Copiar</button><a class="btn sec" style="min-height:36px;padding:0 12px;font-size:13px;border-radius:999px" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(textoWhats(n))}">WhatsApp</a></div>`).join("");
+  $$("[data-copiar]").forEach(b => b.onclick = () => copiar(linkPara(S.convidados[b.dataset.copiar])));
+}
+$("#editar").onclick = () => irPara(0);
+
+/* ============ UTIL ============ */
+let tToast;
+function toast(t) { const el = $("#toast"); el.textContent = t; el.classList.add("on"); clearTimeout(tToast); tToast = setTimeout(() => el.classList.remove("on"), 2400); }
+
+/* ============ INÍCIO ============ */
+(async function () {
+  lerRascunho();
+  await lerFotos();
+  if (S.fotosRemotas) S.fotosRemotas.forEach((u, i) => { if (u && !S.fotos[i]) S.fotos[i] = { url: u, remota: true }; });
+  if (window.API && API.meuConvite) {
+    if (!(await exigirLogin("/criar"))) return;
+    let cv = null;
+    try { cv = await API.meuConvite(); } catch (e) { console.error(e); }
+    if (!cv) { document.body.innerHTML = '<div style="max-width:420px;margin:80px auto;padding:0 20px;text-align:center;font-family:Manrope,system-ui,sans-serif"><h1 style="font-family:Instrument Serif,serif;font-weight:400;font-size:36px">Não achamos um convite nesta conta</h1><p style="color:#7d7263;margin-top:12px">Entre com o mesmo e-mail usado na compra. Se o pagamento foi por Pix, ele pode levar alguns minutos para cair.</p><p style="margin-top:20px"><a href="/entrar">Entrar com outro e-mail</a></p></div>'; return; }
+    const ed = cv.dados && cv.dados.editor;
+    if (ed && !localStorage.getItem(CHAVE)) {
+      Object.assign(S, ed);
+      S.fotos = [null, null, null];
+      (cv.dados.fotos || []).forEach((u, i) => { S.fotos[i] = { url: u, remota: true }; });
+    }
+    S.publicado = cv.publicado && cv.slug ? (window.CONFIG.SITE + "/" + cv.slug) : (S.simulado ? null : S.publicado);
+    S.simulado = false;
+    if (cv.slug && !S.slug) S.slug = cv.slug;
+  }
+  ["nome1","nome2","data","hora","intro","mensagem","evitar","rsvp-ate","slug"].forEach(id => {
+    const v = { nome1: S.nome1, nome2: S.nome2, data: S.data, hora: S.hora, intro: S.intro, mensagem: S.mensagem, evitar: S.traje.evitar, "rsvp-ate": S.rsvp_ate, slug: S.slug }[id];
+    $("#" + id).value = v || "";
+  });
+  $("#c-nome").value = S.cerimonia.nome; $("#c-end").value = S.cerimonia.endereco;
+  $("#r-nome").value = S.recepcao.nome; $("#r-end").value = S.recepcao.endereco; $("#r-hora").value = S.recepcao.hora;
+  $("#conta-msg").textContent = S.mensagem.length + "/280";
+  pintarModelos(); pintarFotos(); pintarCores();
+  pilulas("rec-tipo", () => S.recTipo, v => S.recTipo = v, () => { $("#rec-campos").hidden = S.recTipo !== "outro"; $("#rec-hora-c").hidden = S.recTipo === "nao"; });
+  pilulas("traje-tipo", () => S.traje.texto, v => S.traje.texto = v);
+  if (S.publicado) { mostrarPronto(); irPara(PASSOS.length); } else irPara(0);
+  atualizarPrevia();
+})();
+</script>
+<!--FIM-CONTEUDO-->
+</body>
+</html>

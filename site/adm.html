@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#16120e">
+<title>Painel ADM · Pode Abrir</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root { --bg: #f4f1ec; --card: #fff; --line: #e5ded3; --ink: #1c1712; --soft: #6c6254; --faint: #9a8f80; --gold: #9a7a46; --gold-bg: #f3e8d4; --ok: #2f6b3a; --ok-bg: #e3efe2; --warn: #8a6410; --warn-bg: #fbf0d4; --erro: #9b3b2f; --erro-bg: #f3e2df; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--ink); font-family: "Manrope", system-ui, sans-serif; font-size: 14.5px; line-height: 1.45; }
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+header { background: #16120e; color: #f3ece1; padding: calc(14px + env(safe-area-inset-top)) 16px 14px; }
+header .in { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.marca { font-family: "Instrument Serif", serif; font-size: 24px; }
+.marca em { color: #c9a86c; }
+header .dir { margin-left: auto; display: flex; gap: 10px; align-items: center; font-size: 13px; color: #b3a795; }
+header button { background: #2c251e; color: #f3ece1; border: 0; border-radius: 999px; padding: 8px 14px; font: 700 13px "Manrope", sans-serif; cursor: pointer; }
+main { max-width: 1200px; margin: 0 auto; padding: 18px 16px 60px; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
+.kpi { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px; }
+.kpi span { font-size: 12px; font-weight: 700; color: var(--soft); }
+.kpi b { display: block; font-size: 28px; font-weight: 800; letter-spacing: -.02em; font-variant-numeric: tabular-nums; margin-top: 4px; }
+.kpi small { color: var(--faint); font-size: 12px; }
+.abas { display: flex; gap: 4px; margin-top: 20px; background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 4px; width: fit-content; max-width: 100%; overflow-x: auto; }
+.abas button { border: 0; background: none; font: 700 13px "Manrope", sans-serif; padding: 9px 16px; border-radius: 999px; color: var(--soft); cursor: pointer; white-space: nowrap; }
+.abas button.on { background: var(--ink); color: #fff; }
+.painel { margin-top: 14px; }
+.barra { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.barra input, .barra select { font: inherit; border: 1px solid var(--line); background: var(--card); border-radius: 10px; padding: 0 12px; min-height: 40px; }
+.barra input { flex: 1; min-width: 180px; }
+.tabela { background: var(--card); border: 1px solid var(--line); border-radius: 16px; overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; min-width: 760px; }
+th { text-align: left; font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--soft); font-weight: 800; padding: 12px; border-bottom: 1px solid var(--line); background: #faf8f4; position: sticky; top: 0; }
+td { padding: 11px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+td small { display: block; color: var(--faint); font-size: 12px; }
+.pill { display: inline-block; font-size: 11.5px; font-weight: 800; padding: 4px 9px; border-radius: 999px; white-space: nowrap; }
+.pill.aprovado { background: var(--ok-bg); color: var(--ok); }
+.pill.pendente { background: var(--warn-bg); color: var(--warn); }
+.pill.recusado, .pill.estornado { background: var(--erro-bg); color: var(--erro); }
+.pill.extra { background: var(--gold-bg); color: var(--gold); margin: 2px 2px 0 0; }
+.acao { border: 1px solid var(--line); background: var(--card); border-radius: 8px; padding: 6px 10px; font: 700 12px "Manrope", sans-serif; cursor: pointer; white-space: nowrap; }
+.acao:disabled { opacity: .5; }
+a { color: var(--ink); }
+.form { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 20px; max-width: 520px; display: grid; gap: 12px; }
+.form label { font-weight: 700; font-size: 13px; display: grid; gap: 6px; }
+.form input[type=text], .form input[type=email] { font: inherit; border: 1px solid var(--line); border-radius: 10px; padding: 0 12px; min-height: 44px; }
+.form .cx { display: flex; gap: 16px; font-weight: 600; }
+.form button { background: var(--ink); color: #fff; border: 0; border-radius: 999px; min-height: 46px; font: 800 14px "Manrope", sans-serif; cursor: pointer; }
+.bloqueio { max-width: 420px; margin: 80px auto; text-align: center; padding: 0 16px; }
+.bloqueio h1 { font-family: "Instrument Serif", serif; font-weight: 400; font-size: 36px; }
+.bloqueio p { color: var(--soft); margin-top: 10px; }
+.vazio { padding: 30px; text-align: center; color: var(--soft); }
+.toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom)); transform: translateX(-50%); background: var(--ink); color: #fff; padding: 12px 18px; border-radius: 999px; font-weight: 700; opacity: 0; transition: .25s; pointer-events: none; max-width: 90vw; }
+.toast.on { opacity: 1; }
+.grafico { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px; margin-top: 10px; }
+.grafico h3 { font-size: 13px; font-weight: 800; color: var(--soft); }
+.barras { display: flex; align-items: flex-end; gap: 4px; height: 120px; margin-top: 12px; }
+.barras div { flex: 1; background: var(--gold); border-radius: 4px 4px 0 0; min-height: 2px; position: relative; }
+.barras div:hover::after { content: attr(data-t); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--ink); color: #fff; font-size: 11px; padding: 4px 6px; border-radius: 6px; white-space: nowrap; margin-bottom: 4px; }
+</style>
+</head>
+<body>
+<header><div class="in"><span class="marca">Pode <em>Abrir</em> · ADM</span><div class="dir"><span id="quem"></span><button type="button" id="recarregar">Atualizar</button><button type="button" onclick="sair()">Sair</button></div></div></header>
+<main id="app"><div class="vazio">Carregando…</div></main>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="/js/config.js"></script>
+<script src="/js/api.js"></script>
+<script>
+const $ = (s) => document.querySelector(s);
+const esc = (t) => String(t ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const brl = (v) => "R$ " + Number(v || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const dt = (iso) => new Date(iso).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+const hojeSP = () => new Date().toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" });
+const diaSP = (iso) => new Date(iso).toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" });
+let D = null, aba = "pedidos";
+
+function toast(t) { const el = $("#toast"); el.textContent = t; el.classList.add("on"); setTimeout(() => el.classList.remove("on"), 3000); }
+
+function kpis() {
+  const ap = D.pedidos.filter(p => p.status === "aprovado" && p.metodo !== "cortesia");
+  const hoje = hojeSP();
+  const seteDias = new Date(Date.now() - 7 * 864e5).toISOString();
+  const soma = (l) => l.reduce((a, p) => a + Number(p.valor), 0);
+  const deHoje = ap.filter(p => diaSP(p.criado_em) === hoje);
+  const da7 = ap.filter(p => p.criado_em >= seteDias);
+  const taxa = (k) => ap.length ? Math.round(ap.filter(p => p.itens && p.itens[k]).length / ap.length * 100) + "%" : "–";
+  const pixPend = D.pedidos.filter(p => p.status === "pendente" && p.metodo === "pix").length;
+  const semEntrega = ap.filter(p => !p.acesso_enviado_em).length;
+  return `<div class="kpis">
+    <div class="kpi"><span>Hoje</span><b>${brl(soma(deHoje))}</b><small>${deHoje.length} venda(s)</small></div>
+    <div class="kpi"><span>7 dias</span><b>${brl(soma(da7))}</b><small>${da7.length} venda(s)</small></div>
+    <div class="kpi"><span>30 dias</span><b>${brl(soma(ap))}</b><small>${ap.length} venda(s)</small></div>
+    <div class="kpi"><span>Ticket médio</span><b>${ap.length ? brl(soma(ap) / ap.length) : "–"}</b><small>30 dias</small></div>
+    <div class="kpi"><span>Levaram bump</span><b>${taxa("padrinhos")} · ${taxa("pix")}</b><small>Padrinhos · Pix</small></div>
+    <div class="kpi"><span>Atenção</span><b>${semEntrega}</b><small>${semEntrega === 1 ? "aprovada sem acesso enviado" : "aprovadas sem acesso enviado"} · ${pixPend} Pix esperando</small></div>
+  </div>
+  ${grafico()}`;
+}
+function grafico() {
+  const dias = [...(D.dias || [])].reverse().slice(-30);
+  if (!dias.length) return "";
+  const max = Math.max(...dias.map(d => Number(d.faturamento))) || 1;
+  return `<div class="grafico"><h3>Faturamento por dia (aprovados)</h3><div class="barras">${dias.map(d => `<div style="height:${Number(d.faturamento) / max * 100}%" data-t="${new Date(d.dia + "T12:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}: ${brl(d.faturamento)} (${d.vendas})"></div>`).join("")}</div></div>`;
+}
+
+function tabelaPedidos() {
+  const q = ($("#q") && $("#q").value || "").toLowerCase();
+  const st = ($("#st") && $("#st").value) || "";
+  const l = D.pedidos.filter(p => (!st || p.status === st) && (!q || (p.nome + " " + p.email + " " + (p.whatsapp || "")).toLowerCase().includes(q)));
+  return `<div class="tabela"><table><thead><tr><th>Quando</th><th>Cliente</th><th>Valor</th><th>Itens</th><th>Status</th><th>Acesso</th><th></th></tr></thead><tbody>
+  ${l.map(p => `<tr>
+    <td class="num">${dt(p.criado_em)}<small>${esc(p.metodo || "")}</small></td>
+    <td><b>${esc(p.nome)}</b><small>${esc(p.email)}</small><small>${p.whatsapp ? `<a href="https://wa.me/55${esc(p.whatsapp)}" target="_blank" rel="noopener">${esc(p.whatsapp)}</a>` : ""}</small></td>
+    <td class="num">${brl(p.valor)}</td>
+    <td>${p.itens && p.itens.padrinhos ? '<span class="pill extra">Padrinhos</span>' : ""}${p.itens && p.itens.pix ? '<span class="pill extra">Pix</span>' : ""}</td>
+    <td><span class="pill ${esc(p.status)}">${esc(p.status)}</span><small>${esc(p.status_detalhe || "")}</small></td>
+    <td class="num">${p.acesso_enviado_em ? dt(p.acesso_enviado_em) : (p.status === "aprovado" ? "<b style='color:var(--erro)'>não enviado</b>" : "–")}</td>
+    <td>${p.status === "aprovado" ? `<button class="acao" data-reenviar="${p.id}" type="button">Reenviar acesso</button>` : ""}</td>
+  </tr>`).join("") || `<tr><td colspan="7" class="vazio">Nenhum pedido.</td></tr>`}
+  </tbody></table></div>`;
+}
+function tabelaConvites() {
+  const q = ($("#q") && $("#q").value || "").toLowerCase();
+  const l = D.convites.filter(c => !q || ((c.nome1 || "") + " " + (c.nome2 || "") + " " + (c.slug || "")).toLowerCase().includes(q));
+  return `<div class="tabela"><table><thead><tr><th>Casal</th><th>Link</th><th>Casamento</th><th>Respostas</th><th>Extras</th><th>No ar</th></tr></thead><tbody>
+  ${l.map(c => `<tr>
+    <td><b>${esc(c.nome1 || "(sem nome)")} & ${esc(c.nome2 || "")}</b><small>criado ${dt(c.criado_em)} · ${esc(c.modelo)}</small></td>
+    <td>${c.slug ? `<a href="/${esc(c.slug)}" target="_blank" rel="noopener">/${esc(c.slug)}</a>` : "<small>ainda não escolheu</small>"}</td>
+    <td class="num">${c.data_evento ? new Date(c.data_evento + "T12:00").toLocaleDateString("pt-BR") : "–"}</td>
+    <td class="num">${c.respostas.sim} sim (${c.respostas.pessoas} pessoas)<small>${c.respostas.nao} não</small></td>
+    <td>${c.recursos && c.recursos.padrinhos ? '<span class="pill extra">Padrinhos</span>' : ""}${c.recursos && c.recursos.pix ? '<span class="pill extra">Pix</span>' : ""}</td>
+    <td><button class="acao" type="button" data-publicar="${c.id}" data-v="${c.publicado ? 0 : 1}">${c.publicado ? "No ar · tirar" : "Fora · publicar"}</button></td>
+  </tr>`).join("") || `<tr><td colspan="6" class="vazio">Nenhum convite.</td></tr>`}
+  </tbody></table></div>`;
+}
+function formCortesia() {
+  return `<form class="form" id="f-cortesia">
+    <p style="color:var(--soft)">Libera o acesso sem pagamento (parceria, cliente que pagou por fora, troca). Cria um pedido de R$0 e manda o e-mail de acesso na hora.</p>
+    <label>Nome<input type="text" id="c-nome" required></label>
+    <label>E-mail<input type="email" id="c-email" required></label>
+    <div class="cx"><label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="c-padrinhos">Padrinhos</label><label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="c-pix">Pix</label></div>
+    <button type="submit">Liberar acesso</button>
+  </form>`;
+}
+
+function pintar() {
+  const corpo = aba === "pedidos" ? `<div class="barra"><input id="q" placeholder="Buscar nome, e-mail ou WhatsApp"><select id="st"><option value="">Todos os status</option><option>aprovado</option><option>pendente</option><option>recusado</option><option>estornado</option></select></div><div id="tab">${tabelaPedidos()}</div>`
+    : aba === "convites" ? `<div class="barra"><input id="q" placeholder="Buscar casal ou link"></div><div id="tab">${tabelaConvites()}</div>`
+    : formCortesia();
+  $("#app").innerHTML = kpis() + `<div class="abas"><button data-a="pedidos" class="${aba === "pedidos" ? "on" : ""}">Pedidos</button><button data-a="convites" class="${aba === "convites" ? "on" : ""}">Convites</button><button data-a="cortesia" class="${aba === "cortesia" ? "on" : ""}">Liberar acesso</button></div><div class="painel">${corpo}</div>`;
+  document.querySelectorAll("[data-a]").forEach(b => b.onclick = () => { aba = b.dataset.a; pintar(); });
+  const refiltrar = () => { $("#tab").innerHTML = aba === "pedidos" ? tabelaPedidos() : tabelaConvites(); ligarAcoes(); };
+  if ($("#q")) $("#q").oninput = refiltrar;
+  if ($("#st")) $("#st").onchange = refiltrar;
+  ligarAcoes();
+  const f = $("#f-cortesia");
+  if (f) f.onsubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const r = await chamarFuncao("admin", { acao: "cortesia", nome: $("#c-nome").value, email: $("#c-email").value, itens: { padrinhos: $("#c-padrinhos").checked, pix: $("#c-pix").checked } }, true);
+      toast(r.mensagem); await carregar();
+    } catch (err) { toast(err.message); }
+  };
+}
+function ligarAcoes() {
+  document.querySelectorAll("[data-reenviar]").forEach(b => b.onclick = async () => {
+    b.disabled = true;
+    try { const r = await chamarFuncao("admin", { acao: "reenviar", pedido_id: b.dataset.reenviar }, true); toast(r.mensagem); await carregar(); }
+    catch (e) { toast(e.message); b.disabled = false; }
+  });
+  document.querySelectorAll("[data-publicar]").forEach(b => b.onclick = async () => {
+    b.disabled = true;
+    try { await chamarFuncao("admin", { acao: "publicar", convite_id: b.dataset.publicar, publicado: b.dataset.v === "1" }, true); await carregar(); }
+    catch (e) { toast(e.message); b.disabled = false; }
+  });
+}
+
+async function carregar() {
+  try { D = await chamarFuncao("admin", { acao: "resumo" }, true); pintar(); }
+  catch (e) {
+    $("#app").innerHTML = `<div class="bloqueio"><h1>${e.message === "Acesso negado" ? "Acesso negado" : "Não carregou"}</h1><p>${e.message === "Acesso negado" ? "Este e-mail não está na lista de administradores." : esc(e.message)}</p></div>`;
+  }
+}
+$("#recarregar").onclick = carregar;
+(async () => {
+  if (!window.API) { $("#app").innerHTML = '<div class="bloqueio"><h1>Não configurado</h1><p>Preencha o js/config.js com as chaves do Supabase.</p></div>'; return; }
+  const s = await exigirLogin("/adm"); if (!s) return;
+  $("#quem").textContent = s.user.email;
+  carregar();
+})();
+</script>
+</body>
+</html>

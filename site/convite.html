@@ -1,0 +1,750 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f3eee6">
+<title>Você está convidado</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..600;1,6..96,400&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!--INICIO-CONTEUDO-->
+<style>
+/* ============ MODELOS ============
+   Cada modelo é só um conjunto de variáveis. A estrutura é a mesma. */
+:root, [data-modelo="classico"] {
+  --bg: #f3eee6; --bg2: #e8dfd1; --paper: #fffcf6; --card: #fffcf6;
+  --env: #e8dcc6; --env-shade: #d6c6aa; --env-line: #c2ad86;
+  --ink: #2b241b; --ink-soft: #7b6d5a;
+  --accent: #a8864f; --seal: #6e1c28; --seal-ink: #f2dfb8;
+  --foil: linear-gradient(100deg, #8a6a3a 0%, #d9bf86 30%, #a8864f 45%, #f4e3b9 60%, #9a7843 80%, #8a6a3a 100%);
+  --display: "Instrument Serif", "Times New Roman", serif;
+  --display-caps: none; --display-track: -0.01em;
+  --sans: "Manrope", system-ui, -apple-system, sans-serif;
+}
+[data-modelo="rustico"] {
+  --bg: #eee6d7; --bg2: #e0d3bc; --paper: #faf6ee; --card: #faf6ee;
+  --env: #c4a276; --env-shade: #ad8b5d; --env-line: #93724a;
+  --ink: #33301f; --ink-soft: #6c6750;
+  --accent: #66774f; --seal: #4f5c3a; --seal-ink: #eef0e0;
+  --foil: linear-gradient(100deg, #55633f 0%, #9aac7c 35%, #66774f 50%, #b9c79d 65%, #55633f 100%);
+  --display: "Fraunces", Georgia, serif;
+  --display-caps: none; --display-track: -0.02em;
+  --sans: "Manrope", system-ui, -apple-system, sans-serif;
+}
+[data-modelo="moderno"] {
+  --bg: #111110; --bg2: #1c1b19; --paper: #fbf8f1; --card: #1a1917;
+  --env: #22211e; --env-shade: #161513; --env-line: #3b3934;
+  --ink: #f2ede3; --ink-soft: #a29b8e;
+  --accent: #cdb07a; --seal: #c6a86f; --seal-ink: #1b1a17;
+  --foil: linear-gradient(100deg, #9c7f47 0%, #ecd9a8 30%, #c6a86f 45%, #fff1c9 60%, #a8884e 80%, #9c7f47 100%);
+  --display: "Bodoni Moda", "Didot", serif;
+  --display-caps: uppercase; --display-track: 0.02em;
+  --sans: "Manrope", system-ui, -apple-system, sans-serif;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--sans); font-weight: 400; line-height: 1.6; font-size: 16px;
+  min-height: 100dvh; overflow-x: hidden;
+  font-variant-numeric: lining-nums;
+}
+body.trancado { overflow: hidden; height: 100dvh; }
+img { display: block; max-width: 100%; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+/* textura de papel, bem leve */
+.grao {
+  position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: .35; mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .45 0 0 0 0 .4 0 0 0 .18 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+[data-modelo="moderno"] .grao { mix-blend-mode: screen; opacity: .12; }
+
+/* texto dourado com brilho que passa */
+.foil {
+  background: var(--foil); background-size: 250% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: brilho 6s ease-in-out infinite;
+}
+@keyframes brilho { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+
+/* ============ ENVELOPE ============ */
+#tela-envelope {
+  position: fixed; inset: 0; z-index: 50;
+  display: grid; place-items: center;
+  background: radial-gradient(120% 70% at 50% 0%, color-mix(in srgb, var(--paper) 70%, var(--bg)) 0%, var(--bg) 65%);
+  transition: opacity .7s ease, visibility .7s;
+  padding: 24px 16px calc(24px + env(safe-area-inset-bottom));
+}
+#tela-envelope.saiu { opacity: 0; visibility: hidden; pointer-events: none; }
+
+.env-area { display: flex; flex-direction: column; align-items: center; gap: 30px; width: 100%; }
+.env-para { text-align: center; min-height: 2em; }
+.env-para small { display: block; font-size: 11px; letter-spacing: .34em; text-transform: uppercase; color: var(--ink-soft); font-weight: 500; }
+.env-para b { display: block; font-family: var(--display); font-weight: 400; font-size: 40px; line-height: 1.1; margin-top: 8px; letter-spacing: var(--display-track); text-transform: var(--display-caps); }
+[data-modelo="moderno"] .env-para b { font-size: 30px; }
+
+.envelope {
+  --w: min(84vw, 360px);
+  position: relative; width: var(--w); height: calc(var(--w) * .68);
+  perspective: 1400px;
+}
+.envelope::before { /* sombra fixa, sem filtro: não treme */
+  content: ""; position: absolute; left: 6%; right: 6%; bottom: -18px; height: 36px; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(40, 28, 12, .28), transparent);
+}
+.env-fundo, .env-frente, .env-aba { position: absolute; inset: 0; }
+.env-fundo { background: var(--env-shade); border-radius: 6px; z-index: 1; }
+
+.carta {
+  position: absolute; left: 6%; right: 6%; top: 6%; height: 88%;
+  background: var(--paper); border-radius: 4px; z-index: 2;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,.08);
+  transition: transform 1.1s cubic-bezier(.22,.9,.3,1) .5s;
+  text-align: center; padding: 10px; color: #2b241b;
+}
+.carta small { font-size: 9px; letter-spacing: .34em; text-transform: uppercase; color: #7b6d5a; font-weight: 600; }
+.carta .mono { font-family: var(--display); font-size: 46px; line-height: 1; }
+.aberto .carta { transform: translateY(-58%); }
+
+.env-frente {
+  z-index: 3; border-radius: 6px;
+  background:
+    linear-gradient(to top right, transparent calc(50% - .6px), var(--env-line) 50%, transparent calc(50% + .6px)) left bottom / 50% 100% no-repeat,
+    linear-gradient(to top left, transparent calc(50% - .6px), var(--env-line) 50%, transparent calc(50% + .6px)) right bottom / 50% 100% no-repeat,
+    var(--env);
+  clip-path: polygon(0 0, 50% 52%, 100% 0, 100% 100%, 0 100%);
+}
+.env-aba {
+  z-index: 4; height: 60%;
+  background: linear-gradient(to bottom, var(--env) 0%, var(--env-shade) 100%);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  transform-origin: top center;
+  transition: transform .8s cubic-bezier(.5,0,.3,1), z-index 0s linear .4s;
+  border-radius: 6px 6px 0 0;
+}
+.aberto .env-aba { transform: rotateX(180deg); z-index: 1; }
+
+.selo {
+  position: absolute; z-index: 5; left: 50%; top: 60%;
+  width: 66px; height: 66px; margin: -33px 0 0 -33px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--seal) 65%, white) 0%, var(--seal) 45%, color-mix(in srgb, var(--seal) 72%, black) 100%);
+  display: grid; place-items: center;
+  font-family: var(--display); font-style: italic; color: var(--seal-ink); font-size: 24px; line-height: 1; white-space: nowrap;
+  box-shadow: 0 3px 8px rgba(0,0,0,.28), inset 0 0 0 4px color-mix(in srgb, var(--seal) 80%, black);
+  transition: transform .5s ease, opacity .4s ease;
+}
+.aberto .selo { transform: scale(1.35); opacity: 0; }
+
+.toque {
+  font-size: 11px; letter-spacing: .34em; text-transform: uppercase; color: var(--ink-soft); font-weight: 500;
+  display: flex; align-items: center; gap: 10px;
+  animation: pisca 2.2s ease-in-out infinite;
+}
+.toque::before, .toque::after { content: ""; width: 24px; height: 1px; background: currentColor; opacity: .5; }
+.aberto .toque { opacity: 0; animation: none; transition: opacity .3s; }
+@keyframes pisca { 50% { opacity: .45; } }
+.env-clique { position: absolute; inset: -20px; z-index: 6; }
+
+/* transição: círculo de papel que cresce a partir da carta */
+#iris {
+  position: fixed; inset: 0; z-index: 55; pointer-events: none;
+  background: var(--bg);
+  clip-path: circle(0% at 50% 42%);
+}
+
+.petala {
+  position: fixed; top: -20px; z-index: 60; pointer-events: none;
+  width: 10px; height: 14px; border-radius: 60% 0 60% 0;
+  background: var(--accent);
+  animation: cai linear forwards;
+}
+@keyframes cai { to { transform: translate(var(--dx), 110vh) rotate(var(--rot)); opacity: 0; } }
+
+/* ============ CONVITE ============ */
+main { position: relative; z-index: 2; }
+.sec { padding: 72px 24px; text-align: center; max-width: 560px; margin: 0 auto; }
+.rotulo { font-size: 11px; letter-spacing: .34em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+.titulo {
+  font-family: var(--display); font-weight: 400; font-size: clamp(40px, 11vw, 56px); line-height: 1.02;
+  margin-top: 14px; letter-spacing: var(--display-track); text-transform: var(--display-caps); text-wrap: balance;
+}
+[data-modelo="moderno"] .titulo { font-size: clamp(30px, 8.5vw, 44px); }
+.titulo em { font-style: italic; }
+.linha-mask { display: block; overflow: hidden; padding: .18em 0 .08em; margin-top: -.18em; }
+.linha-mask > span { display: block; }
+.divisor { width: 1px; height: 64px; background: linear-gradient(var(--accent), transparent); margin: 0 auto; transform-origin: top; }
+
+/* capa */
+.capa { padding: calc(56px + env(safe-area-inset-top)) 20px 24px; text-align: center; max-width: 560px; margin: 0 auto; }
+.capa .rotulo { color: var(--ink-soft); }
+.arco {
+  position: relative; width: min(80vw, 360px); aspect-ratio: 3 / 4; margin: 28px auto 0;
+  border-radius: 999px 999px 12px 12px; overflow: hidden;
+  background: var(--bg2);
+  box-shadow: 0 30px 60px -28px rgba(40, 28, 12, .45);
+}
+.arco::after { content: ""; position: absolute; inset: 10px; border-radius: inherit; border: 1px solid rgba(255,255,255,.5); pointer-events: none; }
+.arco img { width: 100%; height: 118%; object-fit: cover; margin-top: -9%; will-change: transform; }
+.arco .sem-foto {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  background: radial-gradient(90% 60% at 50% 35%, var(--paper), var(--bg2));
+  font-family: var(--display); font-style: italic; font-size: 96px; color: var(--accent); white-space: nowrap;
+}
+[data-modelo="moderno"] .arco { border-radius: 4px; }
+[data-modelo="moderno"] .arco .sem-foto { background: radial-gradient(90% 60% at 50% 35%, #2a2824, #161513); }
+
+.nomes {
+  font-family: var(--display); font-weight: 400; line-height: .92; margin-top: 34px;
+  font-size: clamp(68px, 22vw, 124px); letter-spacing: -0.02em; text-transform: var(--display-caps);
+}
+[data-modelo="moderno"] .nomes { font-size: clamp(46px, 14vw, 84px); letter-spacing: .01em; line-height: 1; }
+.nomes .e { display: block; font-style: italic; font-size: .5em; line-height: 1.3; }
+.ch { display: inline-block; will-change: transform; }
+
+.quando { margin-top: 28px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.quando .data { font-family: var(--display); font-size: 30px; letter-spacing: .06em; }
+.quando .dia-sem { font-size: 13px; color: var(--ink-soft); letter-spacing: .04em; }
+
+/* faixa que corre */
+.faixa { overflow: hidden; border-block: 1px solid color-mix(in srgb, var(--accent) 35%, transparent); padding: 16px 0; margin-top: 56px; position: relative; z-index: 2; }
+.faixa-trilho { display: flex; width: max-content; animation: corre 28s linear infinite; }
+.faixa span { font-family: var(--display); font-size: 30px; white-space: nowrap; padding-right: 28px; text-transform: var(--display-caps); }
+.faixa span i { color: var(--accent); font-style: normal; padding-left: 28px; }
+@keyframes corre { to { transform: translateX(-50%); } }
+
+/* contagem */
+.dias-grande { font-family: var(--display); font-size: clamp(110px, 38vw, 180px); line-height: .9; margin-top: 18px; font-variant-numeric: tabular-nums; }
+.dias-legenda { font-size: 14px; color: var(--ink-soft); margin-top: 6px; }
+.relogio { display: flex; justify-content: center; gap: 28px; margin-top: 26px; }
+.relogio div { display: flex; flex-direction: column; align-items: center; }
+.relogio b { font-family: var(--display); font-weight: 400; font-size: 34px; line-height: 1; font-variant-numeric: tabular-nums; min-width: 2ch; }
+.relogio span { font-size: 10px; letter-spacing: .24em; text-transform: uppercase; color: var(--ink-soft); margin-top: 6px; }
+
+/* história */
+.historia { font-family: var(--display); font-size: clamp(28px, 7.6vw, 38px); line-height: 1.22; text-align: left; letter-spacing: -0.005em; margin-top: 18px; }
+[data-modelo="moderno"] .historia { text-transform: none; font-size: clamp(24px, 6.6vw, 32px); }
+.historia .w { opacity: 1; }
+
+/* locais */
+.locais { display: flex; flex-direction: column; gap: 16px; margin-top: 32px; }
+.local { background: var(--card); border-radius: 20px; padding: 30px 24px; text-align: left; position: relative; overflow: hidden; }
+[data-modelo="moderno"] .local { border: 1px solid #2c2a26; }
+.local .topo { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.local .hora { font-family: var(--display); font-size: 44px; line-height: 1; }
+.local h3 { font-family: var(--display); font-weight: 400; font-size: 26px; line-height: 1.15; margin-top: 18px; text-transform: var(--display-caps); }
+[data-modelo="moderno"] .local h3 { font-size: 20px; }
+.local p { font-size: 14px; color: var(--ink-soft); margin-top: 6px; }
+.botao {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  margin-top: 20px; padding: 13px 20px; border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent) 70%, transparent); color: var(--ink);
+  font-size: 12px; letter-spacing: .16em; text-transform: uppercase; font-weight: 600;
+  text-decoration: none; min-height: 46px; transition: background .2s;
+}
+.botao:active { background: color-mix(in srgb, var(--accent) 15%, transparent); }
+.botao.cheio { background: var(--accent); color: var(--paper); border-color: var(--accent); }
+[data-modelo="moderno"] .botao.cheio { color: #111110; }
+.botao svg { width: 16px; height: 16px; flex: none; }
+.acoes-agenda { margin-top: 24px; }
+
+/* traje */
+.cores { display: flex; justify-content: center; gap: 14px; margin-top: 28px; flex-wrap: wrap; }
+.cores i { width: 52px; height: 52px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08), 0 6px 14px -6px rgba(0,0,0,.3); }
+.traje-sub { font-size: 15px; color: var(--ink-soft); margin-top: 14px; }
+.evitar { font-size: 14px; color: var(--ink-soft); margin-top: 22px; }
+
+/* galeria */
+.galeria { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 28px; align-items: start; }
+.galeria img { width: 100%; aspect-ratio: 3/4; object-fit: cover; border-radius: 12px; }
+.galeria img:nth-child(2) { margin-top: 48px; }
+.galeria img:first-child:last-child { grid-column: 1 / -1; aspect-ratio: 4/3; }
+
+/* rsvp */
+.rsvp { background: var(--card); border-radius: 22px; padding: 28px 20px; margin-top: 30px; text-align: left; }
+[data-modelo="moderno"] .rsvp { border: 1px solid #2c2a26; }
+.campo + .campo { margin-top: 18px; }
+.campo label, .campo .lbl { display: block; font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 8px; font-weight: 600; }
+.campo input, .campo textarea {
+  width: 100%; font: inherit; font-size: 16px; color: var(--ink);
+  background: var(--bg); border: 1px solid transparent; border-radius: 12px; padding: 14px;
+  outline: none; -webkit-appearance: none; appearance: none;
+}
+.campo input:focus, .campo textarea:focus { border-color: var(--accent); }
+.escolha { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.escolha button { padding: 14px 8px; border-radius: 12px; background: var(--bg); font-size: 15px; border: 1px solid transparent; min-height: 50px; font-weight: 500; transition: background .2s, border-color .2s; }
+.escolha button.on { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 16%, var(--bg)); }
+.qtd { display: flex; align-items: center; justify-content: space-between; background: var(--bg); border-radius: 12px; padding: 6px; }
+.qtd button { width: 46px; height: 46px; border-radius: 9px; background: var(--card); font-size: 22px; }
+.qtd b { font-family: var(--display); font-size: 28px; font-weight: 400; }
+.rsvp .enviar { width: 100%; margin-top: 24px; }
+.rsvp .prazo { font-size: 13px; color: var(--ink-soft); text-align: center; margin-top: 14px; }
+.rsvp .erro { color: #c0392b; font-size: 14px; margin-top: 12px; text-align: center; }
+.obrigado { text-align: center; padding: 16px 0; }
+.obrigado .titulo { margin-top: 0; }
+.obrigado p { color: var(--ink-soft); margin-top: 12px; }
+
+.rodape { padding: 64px 24px calc(48px + env(safe-area-inset-bottom)); text-align: center; }
+.rodape .fim { font-family: var(--display); font-size: clamp(44px, 13vw, 64px); line-height: 1; text-transform: var(--display-caps); }
+[data-modelo="moderno"] .rodape .fim { font-size: clamp(32px, 9vw, 44px); }
+.rodape .fim em { font-style: italic; }
+.rodape .marca { display: inline-block; margin-top: 36px; font-size: 12px; color: var(--ink-soft); text-decoration: none; opacity: .8; }
+
+/* música */
+.musica {
+  position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); z-index: 40;
+  width: 48px; height: 48px; border-radius: 50%;
+  background: var(--card); color: var(--ink); box-shadow: 0 6px 18px rgba(0,0,0,.18);
+  display: none; place-items: center;
+}
+.musica.tem { display: grid; }
+.musica svg { width: 18px; height: 18px; }
+.musica.tocando svg { animation: gira 4s linear infinite; }
+@keyframes gira { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+</style>
+</head>
+<body class="trancado">
+<div class="grao" aria-hidden="true"></div>
+
+<!-- ENVELOPE -->
+<section id="tela-envelope" aria-label="Convite fechado">
+  <div class="env-area">
+    <p class="env-para" id="env-para"></p>
+    <div class="envelope" id="envelope">
+      <div class="env-fundo"></div>
+      <div class="carta"><small>Você está convidado</small><div class="mono" id="carta-mono"></div></div>
+      <div class="env-frente"></div>
+      <div class="env-aba"></div>
+      <div class="selo" id="selo"></div>
+      <button class="env-clique" id="abrir" aria-label="Abrir convite"></button>
+    </div>
+    <p class="toque">Toque para abrir</p>
+  </div>
+</section>
+<div id="iris" aria-hidden="true"></div>
+
+<main id="convite"></main>
+
+<button class="musica" id="btn-musica" aria-label="Música">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+</button>
+<audio id="audio" loop preload="none"></audio>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="/js/config.js"></script>
+<script src="/js/api.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
+/* ============ DADOS ============
+   Em produção vem do banco pelo endereço (/ana-e-pedro).
+   No editor, a prévia recebe os dados por postMessage. */
+const MARCA = { nome: "Pode Abrir", url: "https://podeabrir.com.br" };
+
+const DEMO = {
+  slug: "demo",
+  modelo: "classico",
+  nome1: "Ana",
+  nome2: "Pedro",
+  data: "2027-04-17T16:30",
+  intro: "O casamento de",
+  mensagem: "Depois de sete anos juntos, chegou o dia de dizer sim na frente de quem a gente mais ama. Sua presença vai deixar esse dia completo.",
+  fotos: [],
+  cerimonia: { nome: "Paróquia Nossa Senhora do Brasil", endereco: "Praça Nossa Senhora do Brasil, 1 — Jardim América, São Paulo", hora: "16:30" },
+  recepcao: { nome: "Espaço Villa Jardim", endereco: "Rua dos Ipês, 250 — Jardim Europa, São Paulo", hora: "18:30" },
+  traje: { texto: "Esporte fino", cores: ["#c9b99b", "#8a9a7b", "#6d5a4a", "#e8d9c4"], evitar: "Pedimos com carinho que evitem o branco." },
+  rsvp_ate: "2027-03-17",
+  musica: ""
+};
+
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const esc = (t) => String(t ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const MESES = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+const SEMANA = ["Domingo","Segunda-feira","Terça-feira","Quarta-feira","Quinta-feira","Sexta-feira","Sábado"];
+const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const semMovimento = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const temGSAP = typeof gsap !== "undefined" && typeof ScrollTrigger !== "undefined";
+if (temGSAP) gsap.registerPlugin(ScrollTrigger);
+
+const params = new URLSearchParams(location.search);
+const convidado = (params.get("para") || "").trim().slice(0, 60);
+const modoPrevia = params.has("previa");
+let C = null;
+let timerContagem = null;
+
+const PIN = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>`;
+const CAL = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>`;
+
+const iniciais = (c) => `${esc((c.nome1 || "A")[0])}&${esc((c.nome2 || "P")[0])}`;
+const linkMapa = (end) => { const q = encodeURIComponent(end); return iOS ? `https://maps.apple.com/?q=${q}` : `https://www.google.com/maps/search/?api=1&query=${q}`; };
+const dataBR = (iso) => { const [, m, d] = iso.split("-"); return `${d}/${m}`; };
+const letras = (t) => [...String(t)].map(ch => ch === " " ? " " : `<span class="ch">${esc(ch)}</span>`).join("");
+const palavras = (t) => String(t).split(/\s+/).map(w => `<span class="w">${esc(w)}</span>`).join(" ");
+const mascara = (html) => `<span class="linha-mask"><span>${html}</span></span>`;
+
+function montar(c) {
+  C = c;
+  if (temGSAP) { ScrollTrigger.getAll().forEach(t => t.kill()); gsap.killTweensOf("*"); }
+  document.documentElement.dataset.modelo = c.modelo || "classico";
+  $('meta[name=theme-color]').content = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
+  document.title = `${c.nome1} & ${c.nome2} · Você está convidado`;
+
+  $("#env-para").innerHTML = convidado ? `<small>Para</small><b>${esc(convidado)}</b>` : `<small>Convite de</small><b>${esc(c.nome1)} & ${esc(c.nome2)}</b>`;
+  $("#carta-mono").innerHTML = `<span class="foil">${iniciais(c)}</span>`;
+  $("#selo").innerHTML = iniciais(c);
+
+  const d = new Date(c.data);
+  const hora = c.data.slice(11, 16);
+  const foto = (c.fotos || [])[0];
+  const extras = (c.fotos || []).slice(1);
+  const dataCurta = `${String(d.getDate()).padStart(2, "0")} · ${String(d.getMonth() + 1).padStart(2, "0")} · ${d.getFullYear()}`;
+  const faixaTxt = `<span>${esc(c.nome1)} & ${esc(c.nome2)}<i>✦</i></span><span>${dataCurta}<i>✦</i></span>`;
+
+  const local = (titulo, l) => l && l.nome ? `
+    <article class="local">
+      <div class="topo"><span class="rotulo">${titulo}</span><span class="hora">${esc(l.hora || hora)}</span></div>
+      <h3>${esc(l.nome)}</h3>
+      <p>${esc(l.endereco)}</p>
+      ${l.endereco ? `<a class="botao" href="${linkMapa(l.endereco)}" target="_blank" rel="noopener">${PIN} Como chegar</a>` : ""}
+    </article>` : "";
+
+  $("#convite").innerHTML = `
+    <header class="capa">
+      <p class="rotulo anima-sobe">${esc(c.intro || "O casamento de")}</p>
+      <div class="arco" id="arco">
+        ${foto ? `<img src="${esc(foto)}" alt="${esc(c.nome1)} e ${esc(c.nome2)}">` : `<div class="sem-foto"><span class="foil">${iniciais(c)}</span></div>`}
+      </div>
+      <h1 class="nomes" aria-label="${esc(c.nome1)} e ${esc(c.nome2)}">
+        ${mascara(letras(c.nome1))}
+        <span class="e foil anima-sobe">&amp;</span>
+        ${mascara(letras(c.nome2))}
+      </h1>
+      <div class="quando anima-sobe">
+        <span class="data">${dataCurta}</span>
+        <span class="dia-sem">${SEMANA[d.getDay()]}, às ${hora.replace(":", "h")}</span>
+      </div>
+    </header>
+
+    <div class="faixa" aria-hidden="true"><div class="faixa-trilho" id="faixa">${faixaTxt.repeat(4)}</div></div>
+
+    <section class="sec" id="s-contagem">
+      <p class="rotulo">Faltam</p>
+      <div class="dias-grande" id="dias">0</div>
+      <p class="dias-legenda">dias para o grande dia</p>
+      <div class="relogio" id="relogio"></div>
+    </section>
+
+    ${c.mensagem ? `
+    <section class="sec" id="s-historia">
+      <div class="divisor"></div>
+      <p class="rotulo" style="margin-top:28px">Nossa história</p>
+      <p class="historia" id="historia">${palavras(c.mensagem)}</p>
+    </section>` : ""}
+
+    <section class="sec">
+      <p class="rotulo">Onde e quando</p>
+      <h2 class="titulo">${mascara(`${d.getDate()} de ${MESES[d.getMonth()]}`)}</h2>
+      <div class="locais">
+        ${local("Cerimônia", c.cerimonia)}
+        ${local("Recepção", c.recepcao)}
+      </div>
+      <div class="acoes-agenda anima-sobe"><button class="botao" id="agenda" type="button">${CAL} Salvar na agenda</button></div>
+    </section>
+
+    ${c.traje && (c.traje.texto || (c.traje.cores || []).length) ? `
+    <section class="sec" id="s-traje">
+      <p class="rotulo">Traje</p>
+      <h2 class="titulo">${mascara(esc(c.traje.texto || "Traje"))}</h2>
+      ${(c.traje.cores || []).length ? `<p class="traje-sub anima-sobe">Uma paleta pra inspirar</p><div class="cores">${c.traje.cores.map(x => `<i style="background:${esc(x)}"></i>`).join("")}</div>` : ""}
+      ${c.traje.evitar ? `<p class="evitar anima-sobe">${esc(c.traje.evitar)}</p>` : ""}
+    </section>` : ""}
+
+    ${extras.length ? `<section class="sec"><p class="rotulo">Nós dois</p><div class="galeria">${extras.map(f => `<img src="${esc(f)}" alt="" loading="lazy">`).join("")}</div></section>` : ""}
+
+    <section class="sec" id="confirmar">
+      <p class="rotulo">Confirme sua presença</p>
+      <h2 class="titulo">${mascara("Você <em>vem?</em>")}</h2>
+      <div class="rsvp anima-sobe" id="rsvp"></div>
+    </section>
+
+    <footer class="rodape">
+      <div class="divisor"></div>
+      <p class="fim" style="margin-top:32px">${esc(c.nome1)} <em class="foil">&amp;</em> ${esc(c.nome2)}</p>
+      <a class="marca" href="${MARCA.url}" target="_blank" rel="noopener">Feito com ♥ no ${MARCA.nome}</a>
+    </footer>`;
+
+  formRSVP();
+  $("#agenda").onclick = salvarAgenda;
+  contagem();
+  clearInterval(timerContagem);
+  timerContagem = setInterval(contagem, 1000);
+
+  const audio = $("#audio");
+  if (c.musica) { audio.src = c.musica; $("#btn-musica").classList.add("tem"); }
+  else { audio.removeAttribute("src"); $("#btn-musica").classList.remove("tem"); }
+}
+
+let diasAnimados = false;
+function contagem() {
+  if (!C || !$("#relogio")) return;
+  let s = Math.max(0, Math.floor((new Date(C.data) - Date.now()) / 1000));
+  const d = Math.floor(s / 86400); s %= 86400;
+  const h = Math.floor(s / 3600); s %= 3600;
+  const m = Math.floor(s / 60); s %= 60;
+  if (diasAnimados || !temGSAP || semMovimento) $("#dias").textContent = d;
+  $("#dias").dataset.valor = d;
+  $("#relogio").innerHTML = [[h, "horas"], [m, "min"], [s, "seg"]].map(([n, t]) => `<div><b>${String(n).padStart(2, "0")}</b><span>${t}</span></div>`).join("");
+}
+
+/* ============ ANIMAÇÕES DE ROLAGEM ============
+   Só entram depois que o envelope abre. Sem GSAP (ou com "reduzir movimento"),
+   tudo já está visível: nada depende da animação para aparecer. */
+function animarEntrada() {
+  if (!temGSAP || semMovimento) { diasAnimados = true; contagem(); return; }
+  diasAnimados = false;
+  const ease = "power4.out";
+
+  // capa: foto se revela de baixo pra cima e desce o zoom; nomes sobem letra por letra
+  const tl = gsap.timeline({ defaults: { ease } });
+  tl.from(".capa > .rotulo", { y: 20, autoAlpha: 0, duration: .9 })
+    .fromTo("#arco", { clipPath: "inset(100% 0% 0% 0% round 999px 999px 12px 12px)" }, { clipPath: "inset(0% 0% 0% 0% round 999px 999px 12px 12px)", duration: 1.6, ease: "expo.inOut", clearProps: "clipPath" }, "<.1")
+    .from("#arco img, #arco .sem-foto", { scale: 1.35, duration: 2.2, ease: "expo.out" }, "<.2")
+    .from(".nomes .linha-mask:first-child .ch", { yPercent: 110, duration: 1.1, stagger: .05 }, "-=1.3")
+    .from(".nomes .e", { scale: .4, autoAlpha: 0, duration: 1, ease: "back.out(2)" }, "-=.8")
+    .from(".nomes .linha-mask:last-child .ch", { yPercent: 110, duration: 1.1, stagger: .05 }, "-=.9")
+    .from(".capa .quando", { y: 24, autoAlpha: 0, duration: 1 }, "-=.7");
+
+  // foto com parallax ao rolar
+  gsap.to("#arco img, #arco .sem-foto", { yPercent: 10, ease: "none", scrollTrigger: { trigger: "#arco", start: "top top", end: "bottom top", scrub: true } });
+
+  // faixa acelera e inclina conforme a velocidade da rolagem
+  const faixa = $("#faixa");
+  ScrollTrigger.create({
+    trigger: ".faixa", start: "top bottom", end: "bottom top",
+    onUpdate: (self) => gsap.to(faixa, { skewX: gsap.utils.clamp(-8, 8, self.getVelocity() / -300), duration: .4, overwrite: true })
+  });
+
+  // rótulos, títulos e blocos: sobem ao entrar na tela
+  $$(".sec .rotulo, .anima-sobe:not(.capa *)").forEach(el => gsap.from(el, { y: 26, autoAlpha: 0, duration: 1, ease, scrollTrigger: { trigger: el, start: "top 90%" } }));
+  $$(".sec .linha-mask > span").forEach(el => gsap.from(el, { yPercent: 105, duration: 1.2, ease, scrollTrigger: { trigger: el.parentNode, start: "top 88%" } }));
+  $$(".divisor").forEach(el => gsap.from(el, { scaleY: 0, duration: 1.2, ease, scrollTrigger: { trigger: el, start: "top 88%" } }));
+
+  // contagem: o número de dias sobe de 0 até o valor
+  const dias = $("#dias");
+  const alvo = { v: 0 };
+  gsap.from(dias, { yPercent: 30, autoAlpha: 0, duration: 1, ease, scrollTrigger: { trigger: dias, start: "top 85%" } });
+  gsap.to(alvo, {
+    v: Number(dias.dataset.valor || 0), duration: 2.2, ease: "power3.out",
+    scrollTrigger: { trigger: dias, start: "top 85%" },
+    onUpdate: () => { dias.textContent = Math.round(alvo.v); },
+    onComplete: () => { diasAnimados = true; }
+  });
+  gsap.from("#relogio > div", { y: 20, autoAlpha: 0, stagger: .1, duration: .8, ease, scrollTrigger: { trigger: "#relogio", start: "top 90%" } });
+
+  // história: as palavras acendem conforme a pessoa rola
+  if ($("#historia")) {
+    gsap.fromTo("#historia .w", { opacity: .14 }, {
+      opacity: 1, stagger: .08, ease: "none",
+      scrollTrigger: { trigger: "#historia", start: "top 80%", end: "bottom 45%", scrub: .6 }
+    });
+  }
+
+  // cartões dos locais
+  $$(".local").forEach((el, i) => gsap.from(el, {
+    y: 70, rotateX: -12, autoAlpha: 0, transformPerspective: 900, transformOrigin: "50% 0%",
+    duration: 1.2, ease, delay: i * .05, scrollTrigger: { trigger: el, start: "top 92%" }
+  }));
+
+  // paleta do traje: bolinhas saltam uma a uma
+  if ($(".cores")) gsap.from(".cores i", { scale: 0, autoAlpha: 0, stagger: .09, duration: .9, ease: "back.out(2.2)", scrollTrigger: { trigger: ".cores", start: "top 90%" } });
+
+  // galeria: cada foto em velocidade diferente
+  $$(".galeria img").forEach((img, i) => {
+    gsap.from(img, { clipPath: "inset(0% 0% 100% 0%)", duration: 1.4, ease: "expo.inOut", scrollTrigger: { trigger: img, start: "top 90%" } });
+    gsap.to(img, { yPercent: i % 2 ? -10 : 6, ease: "none", scrollTrigger: { trigger: img, start: "top bottom", end: "bottom top", scrub: true } });
+  });
+
+  // rodapé
+  gsap.from(".rodape .fim", { y: 40, autoAlpha: 0, duration: 1.2, ease, scrollTrigger: { trigger: ".rodape .fim", start: "top 92%" } });
+
+  ScrollTrigger.refresh();
+}
+
+/* ---------- confirmação de presença ---------- */
+const RSVP = { vai: null, pessoas: 1 };
+function formRSVP() {
+  RSVP.vai = null; RSVP.pessoas = 1;
+  const box = $("#rsvp");
+  const prazo = C.rsvp_ate ? `Pedimos a gentileza de confirmar até ${dataBR(C.rsvp_ate)}.` : "";
+  box.innerHTML = `
+    <div class="campo"><label for="r-nome">Seu nome</label><input id="r-nome" autocomplete="name" value="${esc(convidado)}" placeholder="Nome e sobrenome"></div>
+    <div class="campo"><span class="lbl">Vai comparecer?</span>
+      <div class="escolha"><button type="button" data-vai="1">Vou sim!</button><button type="button" data-vai="0">Não poderei</button></div></div>
+    <div class="campo" id="c-pessoas" hidden><span class="lbl">Quantas pessoas, contando você?</span>
+      <div class="qtd"><button type="button" data-q="-1" aria-label="Menos">−</button><b id="r-qtd">1</b><button type="button" data-q="1" aria-label="Mais">+</button></div></div>
+    <div class="campo"><label for="r-msg">Recado para os noivos (opcional)</label><textarea id="r-msg" rows="3" maxlength="400"></textarea></div>
+    <button class="botao cheio enviar" id="r-enviar" type="button">Enviar confirmação</button>
+    <p class="erro" id="r-erro" hidden></p>
+    <p class="prazo">${prazo}</p>`;
+  $$("[data-vai]", box).forEach(b => b.onclick = () => {
+    RSVP.vai = b.dataset.vai === "1";
+    $$("[data-vai]", box).forEach(x => x.classList.toggle("on", x === b));
+    $("#c-pessoas").hidden = !RSVP.vai;
+    if (temGSAP) ScrollTrigger.refresh();
+  });
+  $$("[data-q]", box).forEach(b => b.onclick = () => {
+    RSVP.pessoas = Math.min(10, Math.max(1, RSVP.pessoas + Number(b.dataset.q)));
+    $("#r-qtd").textContent = RSVP.pessoas;
+  });
+  $("#r-enviar").onclick = enviarRSVP;
+}
+
+async function enviarRSVP() {
+  const nome = $("#r-nome").value.trim();
+  const erro = $("#r-erro");
+  const mostraErro = (t) => { erro.textContent = t; erro.hidden = false; };
+  if (!nome) return mostraErro("Escreva seu nome para a gente saber quem é.");
+  if (RSVP.vai === null) return mostraErro("Toque em “Vou sim!” ou “Não poderei”.");
+  const btn = $("#r-enviar"); btn.disabled = true; btn.textContent = "Enviando…";
+  const dados = { convite: C.slug, nome, vai: RSVP.vai, pessoas: RSVP.vai ? RSVP.pessoas : 0, recado: $("#r-msg").value.trim() };
+  try {
+    await window.salvarConfirmacao(dados);
+    $("#rsvp").innerHTML = `<div class="obrigado"><p class="titulo">${RSVP.vai ? "Obrigado!" : "Que pena!"}</p>
+      <p>${RSVP.vai ? `Sua presença está confirmada${RSVP.pessoas > 1 ? ` para ${RSVP.pessoas} pessoas` : ""}. Até lá, ${esc(nome.split(" ")[0])}!` : "Obrigado por avisar. Vamos sentir sua falta."}</p></div>`;
+    if (RSVP.vai) petalas(40);
+    if (temGSAP && !semMovimento) gsap.from(".obrigado > *", { y: 20, autoAlpha: 0, stagger: .12, duration: .8, ease: "power3.out" });
+  } catch (e) {
+    btn.disabled = false; btn.textContent = "Enviar confirmação";
+    mostraErro("Não conseguimos enviar agora. Confira sua internet e tente de novo.");
+  }
+}
+
+/* Troca por Supabase em produção. Na demo/prévia só guarda no aparelho. */
+window.salvarConfirmacao = window.salvarConfirmacao || (async (d) => {
+  try { const k = "rsvp-" + d.convite; const l = JSON.parse(localStorage.getItem(k) || "[]"); l.push({ ...d, em: new Date().toISOString() }); localStorage.setItem(k, JSON.stringify(l)); } catch (_) {}
+});
+
+/* ---------- agenda (.ics) ---------- */
+function salvarAgenda() {
+  const ini = new Date(C.data);
+  const fim = new Date(ini.getTime() + 6 * 3600e3);
+  const f = (d) => d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+  const onde = (C.cerimonia && C.cerimonia.endereco) || "";
+  const titulo = `Casamento ${C.nome1} & ${C.nome2}`;
+  if (!iOS) {
+    const u = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(titulo)}&dates=${f(ini)}/${f(fim)}&location=${encodeURIComponent(onde)}`;
+    const a = document.createElement("a"); a.href = u; a.target = "_blank"; a.rel = "noopener"; a.click();
+    return;
+  }
+  const ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//PodeAbrir//PT", "BEGIN:VEVENT",
+    `UID:${C.slug}-${f(ini)}@convite`, `DTSTAMP:${f(new Date())}`, `DTSTART:${f(ini)}`, `DTEND:${f(fim)}`,
+    `SUMMARY:${titulo}`, `LOCATION:${onde.replace(/,/g, "\\,")}`, "END:VEVENT", "END:VCALENDAR"].join("\r\n");
+  const a = document.createElement("a");
+  a.href = "data:text/calendar;charset=utf-8," + encodeURIComponent(ics);
+  a.download = `casamento-${C.slug}.ics`;
+  a.click();
+}
+
+/* ---------- abrir envelope ---------- */
+function abrir() {
+  const tela = $("#tela-envelope");
+  if (tela.classList.contains("aberto")) return;
+  tela.classList.add("aberto");
+  if (navigator.vibrate) navigator.vibrate(12);
+  tocar();
+  setTimeout(() => petalas(28), 450);
+
+  const revelar = () => {
+    tela.classList.add("saiu");
+    document.body.classList.remove("trancado");
+    window.scrollTo(0, 0);
+    animarEntrada();
+  };
+  if (!temGSAP || semMovimento) return setTimeout(revelar, 1900);
+
+  // a carta sobe, e um círculo de papel cresce a partir dela até cobrir a tela
+  gsap.timeline({ delay: 1.55 })
+    .to("#iris", { clipPath: "circle(150% at 50% 42%)", duration: 1.1, ease: "expo.inOut" })
+    .add(revelar)
+    .set("#iris", { clipPath: "circle(0% at 50% 42%)" });
+}
+function petalas(n) {
+  if (semMovimento) return;
+  if (window.innerWidth >= 500) n = Math.round(n * 1.5);
+  for (let i = 0; i < n; i++) {
+    const p = document.createElement("i");
+    p.className = "petala";
+    p.style.left = Math.random() * 100 + "vw";
+    p.style.setProperty("--dx", (Math.random() * 120 - 60) + "px");
+    p.style.setProperty("--rot", (Math.random() * 720 - 360) + "deg");
+    p.style.animationDuration = (2.8 + Math.random() * 2.4) + "s";
+    p.style.animationDelay = (Math.random() * 0.9) + "s";
+    p.style.opacity = 0.45 + Math.random() * 0.45;
+    p.style.scale = String(0.6 + Math.random() * 0.8);
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 7000);
+  }
+}
+
+/* ---------- música ---------- */
+const audio = $("#audio");
+function tocar() { if (!C || !C.musica) return; audio.play().then(() => $("#btn-musica").classList.add("tocando")).catch(() => {}); }
+$("#btn-musica").onclick = () => {
+  if (audio.paused) tocar(); else { audio.pause(); $("#btn-musica").classList.remove("tocando"); }
+};
+
+$("#abrir").onclick = abrir;
+
+/* ---------- prévia do editor ----------
+   O editor manda {tipo:"dados", convite:{...}, aberto:bool} */
+function mostrarAberto() {
+  $("#tela-envelope").classList.add("aberto", "saiu");
+  document.body.classList.remove("trancado");
+}
+function fecharEnvelope() {
+  $("#tela-envelope").classList.remove("aberto", "saiu");
+  document.body.classList.add("trancado");
+  window.scrollTo(0, 0);
+}
+window.addEventListener("message", (ev) => {
+  if (ev.origin !== location.origin || !ev.data || ev.data.tipo !== "dados") return;
+  const y = window.scrollY;
+  montar(ev.data.convite);
+  if (ev.data.aberto) { mostrarAberto(); diasAnimados = true; contagem(); window.scrollTo(0, y); }
+  else fecharEnvelope();
+});
+
+function naoEncontrado() {
+  document.title = "Convite não encontrado";
+  $("#tela-envelope").innerHTML = `<div style="text-align:center;max-width:320px">
+    <p class="rotulo">Pode Abrir</p>
+    <h1 class="titulo" style="font-size:36px">Convite não encontrado</h1>
+    <p style="color:var(--ink-soft);margin-top:14px">Confira se o link está completo. Se o casamento já passou, o convite pode ter saído do ar.</p></div>`;
+}
+
+/* ---------- carregar ---------- */
+window.CONVITE = { montar, fecharEnvelope, DEMO };
+(async function iniciar() {
+  if (modoPrevia) { window.parent.postMessage({ tipo: "pronto" }, location.origin); return; }
+  if (typeof window.carregarConvite === "function") {
+    const c = await window.carregarConvite();
+    if (c === null) return naoEncontrado();
+    if (c) return montar(c);
+  }
+  const m = params.get("modelo");
+  montar({ ...DEMO, modelo: ["classico", "rustico", "moderno"].includes(m) ? m : DEMO.modelo });
+})();
+</script>
+<!--FIM-CONTEUDO-->
+</body>
+</html>

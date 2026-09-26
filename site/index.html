@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f6f1e9">
+<title>Pode Abrir · Convite de casamento que abre como envelope</title>
+<meta name="description" content="Convite de casamento digital: o convidado toca, o envelope abre e aparece o convite de vocês, com fotos, contagem regressiva, mapa e confirmação de presença. R$67, pagamento único.">
+<meta property="og:title" content="Pode Abrir · Seu convite chega no WhatsApp e abre como um envelope">
+<meta property="og:description" content="Monte em 10 minutos no celular. Confirmação de presença, mapa e contagem regressiva. R$67, pagamento único.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!--INICIO-CONTEUDO-->
+<style>
+:root {
+  --bg: #f6f1e9; --bg2: #efe7da; --card: #fffdf9; --line: #e4dacb;
+  --ink: #1f1a14; --soft: #6f6456; --faint: #9c8f7e;
+  --gold: #9a7a46; --gold-2: #b8955c; --gold-bg: #f1e6d2;
+  --dark: #1c1712; --dark-ink: #f3ece1; --dark-soft: #b3a795;
+  --display: "Instrument Serif", Georgia, serif;
+  --sans: "Manrope", system-ui, -apple-system, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 17px; line-height: 1.6; overflow-x: hidden; }
+img { max-width: 100%; display: block; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-inline: 20px; }
+.eyebrow { font-size: 12px; letter-spacing: .28em; text-transform: uppercase; color: var(--gold); font-weight: 700; }
+h1, h2, h3 { font-family: var(--display); font-weight: 400; line-height: 1.02; letter-spacing: -.01em; text-wrap: balance; }
+h1 em, h2 em { color: var(--gold); }
+h2 { font-size: clamp(38px, 7vw, 60px); }
+.lead { color: var(--soft); font-size: 18px; max-width: 54ch; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  background: var(--ink); color: #fff; text-decoration: none; font-weight: 800; font-size: 17px;
+  padding: 18px 30px; border-radius: 999px; min-height: 58px; transition: transform .15s, background .15s;
+  box-shadow: 0 14px 30px -14px rgba(31, 26, 20, .6);
+}
+.btn:hover { transform: translateY(-1px); background: #000; }
+.btn svg { width: 18px; height: 18px; }
+.micro { font-size: 13px; color: var(--faint); margin-top: 12px; }
+
+/* topo */
+.topo { padding: calc(16px + env(safe-area-inset-top)) 0 0; }
+.topo .wrap { display: flex; align-items: center; justify-content: space-between; }
+.marca { font-family: var(--display); font-size: 26px; text-decoration: none; }
+.marca em { color: var(--gold); }
+.topo a.entrar { font-size: 14px; font-weight: 600; color: var(--soft); text-decoration: none; }
+
+/* hero */
+.hero { padding: 36px 0 64px; }
+.hero .wrap { display: grid; gap: 40px; align-items: center; }
+@media (min-width: 920px) { .hero .wrap { grid-template-columns: 1.05fr .95fr; gap: 56px; } .hero { padding-top: 56px; } }
+.hero h1 { font-size: clamp(46px, 9.5vw, 82px); margin-top: 14px; }
+.hero .lead { margin-top: 20px; }
+.hero .cta { margin-top: 30px; }
+.selos { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 26px; font-size: 14px; color: var(--soft); font-weight: 600; }
+.selos span::before { content: "✓"; color: var(--gold); margin-right: 6px; font-weight: 800; }
+
+.palco { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.celular {
+  position: relative; width: min(330px, 86vw); aspect-ratio: 9 / 19; border-radius: 48px; padding: 10px;
+  background: #16120e; box-shadow: 0 40px 80px -40px rgba(40, 28, 12, .65), inset 0 0 0 2px #2c261f;
+}
+.celular::before { content: ""; position: absolute; top: 20px; left: 50%; transform: translateX(-50%); width: 92px; height: 26px; border-radius: 20px; background: #16120e; z-index: 2; }
+.celular iframe { width: 100%; height: 100%; border: 0; border-radius: 38px; background: var(--bg); display: block; }
+.dica-toque { font-size: 14px; color: var(--soft); font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.dica-toque i { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); animation: pulso 1.6s ease-in-out infinite; }
+@keyframes pulso { 50% { transform: scale(1.8); opacity: .3; } }
+.modelos { display: flex; gap: 6px; background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 4px; }
+.modelos button { font: 700 13px var(--sans); padding: 9px 16px; border-radius: 999px; border: 0; background: none; color: var(--soft); cursor: pointer; }
+.modelos button.on { background: var(--ink); color: #fff; }
+
+/* seções */
+section.sec { padding: 88px 0; }
+.cabeca { max-width: 680px; }
+.cabeca .lead { margin-top: 16px; }
+
+.passos { display: grid; gap: 16px; margin-top: 44px; counter-reset: p; }
+@media (min-width: 820px) { .passos { grid-template-columns: repeat(3, 1fr); } }
+.passo { background: var(--card); border: 1px solid var(--line); border-radius: 22px; padding: 28px 24px; }
+.passo .n { font-family: var(--display); font-size: 56px; line-height: 1; color: var(--gold); }
+.passo h3 { font-size: 28px; margin-top: 14px; }
+.passo p { color: var(--soft); margin-top: 8px; font-size: 16px; }
+
+.escuro { background: var(--dark); color: var(--dark-ink); }
+.escuro .lead { color: var(--dark-soft); }
+.escuro h2 em { color: var(--gold-2); }
+.recursos { display: grid; gap: 1px; margin-top: 48px; background: #3a3129; border: 1px solid #3a3129; border-radius: 22px; overflow: hidden; }
+@media (min-width: 720px) { .recursos { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1000px) { .recursos { grid-template-columns: repeat(3, 1fr); } }
+.recurso { background: var(--dark); padding: 30px 26px; }
+.recurso svg { width: 26px; height: 26px; color: var(--gold-2); }
+.recurso h3 { font-size: 26px; margin-top: 16px; }
+.recurso p { color: var(--dark-soft); font-size: 15.5px; margin-top: 6px; }
+
+.painel-demo { display: grid; gap: 40px; align-items: center; }
+@media (min-width: 900px) { .painel-demo { grid-template-columns: 1fr 1fr; } }
+.lista-demo { background: var(--card); border: 1px solid var(--line); border-radius: 22px; padding: 22px; box-shadow: 0 30px 60px -40px rgba(40, 28, 12, .4); }
+.totais { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.totais div { background: var(--bg); border-radius: 14px; padding: 14px 10px; text-align: center; }
+.totais b { display: block; font-family: var(--display); font-size: 40px; line-height: 1; font-weight: 400; font-variant-numeric: tabular-nums; }
+.totais span { font-size: 12px; color: var(--soft); font-weight: 600; }
+.resp { display: flex; align-items: center; gap: 12px; padding: 14px 4px; border-bottom: 1px solid var(--line); font-size: 15px; }
+.resp:last-child { border-bottom: 0; }
+.resp .av { width: 38px; height: 38px; border-radius: 50%; background: var(--gold-bg); color: var(--gold); display: grid; place-items: center; font-weight: 800; flex: none; }
+.resp b { font-weight: 700; }
+.resp small { display: block; color: var(--soft); font-size: 13px; }
+.resp .tag { margin-left: auto; font-size: 12px; font-weight: 800; padding: 5px 10px; border-radius: 999px; white-space: nowrap; }
+.tag.sim { background: #e3efe2; color: #2f6b3a; }
+.tag.nao { background: #f3e2df; color: #9b3b2f; }
+
+.conta { display: grid; gap: 16px; margin-top: 44px; }
+@media (min-width: 820px) { .conta { grid-template-columns: 1fr 1fr; } }
+.conta > div { border-radius: 22px; padding: 30px 26px; }
+.conta .papel { background: var(--bg2); }
+.conta .nosso { background: var(--ink); color: #fff; }
+.conta .rot { font-size: 13px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; opacity: .7; }
+.conta .valor { font-family: var(--display); font-size: clamp(48px, 9vw, 72px); line-height: 1; margin-top: 12px; }
+.conta .papel .valor { text-decoration: line-through; text-decoration-thickness: 2px; color: var(--soft); }
+.conta p { margin-top: 10px; font-size: 15.5px; opacity: .85; }
+
+.oferta { max-width: 560px; margin: 44px auto 0; background: var(--card); border: 1.5px solid var(--gold); border-radius: 28px; padding: 34px 26px; text-align: center; box-shadow: 0 40px 80px -50px rgba(90, 64, 20, .6); }
+.oferta .preco { font-family: var(--display); font-size: 96px; line-height: .9; margin-top: 10px; }
+.oferta .preco sup { font-size: .32em; vertical-align: 1.3em; margin-right: 4px; color: var(--soft); }
+.oferta .forma { color: var(--soft); font-size: 15px; margin-top: 6px; }
+.oferta ul { list-style: none; text-align: left; margin: 26px 0; display: grid; gap: 10px; }
+.oferta li { padding-left: 28px; position: relative; font-size: 16px; }
+.oferta li::before { content: ""; position: absolute; left: 0; top: 4px; width: 18px; height: 18px; border-radius: 50%; background: var(--gold-bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239a7a46' stroke-width='3'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center / 12px no-repeat; }
+.oferta .btn { width: 100%; }
+
+.garantia { display: flex; gap: 18px; align-items: flex-start; max-width: 620px; margin: 40px auto 0; background: var(--bg2); border-radius: 20px; padding: 24px; }
+.garantia .selo { flex: none; width: 64px; height: 64px; border-radius: 50%; border: 1.5px solid var(--gold); display: grid; place-items: center; font-family: var(--display); font-size: 30px; color: var(--gold); line-height: 1; text-align: center; }
+.garantia .selo small { display: block; font-family: var(--sans); font-size: 9px; font-weight: 800; letter-spacing: .1em; }
+.garantia h3 { font-size: 26px; }
+.garantia p { color: var(--soft); font-size: 15.5px; margin-top: 4px; }
+
+.faq { max-width: 760px; margin: 40px auto 0; }
+.faq details { border-bottom: 1px solid var(--line); }
+.faq summary { list-style: none; cursor: pointer; padding: 22px 36px 22px 0; font-weight: 700; font-size: 17px; position: relative; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; position: absolute; right: 4px; top: 16px; font-size: 26px; font-weight: 400; color: var(--gold); transition: transform .2s; }
+.faq details[open] summary::after { transform: rotate(45deg); }
+.faq details p { color: var(--soft); padding: 0 0 22px; font-size: 16px; }
+
+.final { text-align: center; }
+.final h2 { max-width: 760px; margin: 0 auto; }
+.final .btn { margin-top: 30px; }
+footer { padding: 40px 0 calc(40px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); font-size: 13px; color: var(--faint); }
+footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; justify-content: space-between; }
+
+.sobe { opacity: 1; transform: none; transition: opacity .8s ease, transform .8s ease; }
+.js .sobe:not(.dentro) { opacity: 0; transform: translateY(24px); }
+@media (prefers-reduced-motion: reduce) { .js .sobe:not(.dentro) { opacity: 1; transform: none; } .dica-toque i { animation: none; } }
+</style>
+</head>
+<body>
+<script>document.documentElement.classList.add("js");</script>
+
+<header class="topo">
+  <div class="wrap">
+    <a class="marca" href="/">Pode <em>Abrir</em></a>
+    <a class="entrar" href="/entrar">Já comprei</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <p class="eyebrow">Convite de casamento digital</p>
+      <h1>Seu convite chega no WhatsApp e <em>abre como um envelope</em> de verdade.</h1>
+      <p class="lead">O convidado toca, o envelope abre e aparece o convite de vocês: as fotos, a contagem regressiva, o local com mapa e a confirmação de presença. Você monta sozinha, no celular, em 10 minutos.</p>
+      <div class="cta">
+        <a class="btn" href="/checkout" data-checkout>Quero o meu por R$67 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <p class="micro">Pagamento único. Pix ou cartão em até 12x.</p>
+      </div>
+      <div class="selos"><span>Sem app pra instalar</span><span>iPhone e Android</span><span>Convidados ilimitados</span></div>
+    </div>
+    <div class="palco">
+      <div class="celular"><iframe id="demo" src="/convite?para=Voc%C3%AA" title="Demonstração do convite" loading="eager"></iframe></div>
+      <p class="dica-toque"><i></i>Toque no envelope</p>
+      <div class="modelos" role="group" aria-label="Modelos">
+        <button type="button" data-m="classico" class="on">Clássico</button>
+        <button type="button" data-m="rustico">Rústico</button>
+        <button type="button" data-m="moderno">Moderno</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" style="padding-top:40px">
+  <div class="wrap">
+    <div class="cabeca sobe">
+      <p class="eyebrow">Como funciona</p>
+      <h2>Do celular pro WhatsApp dos convidados, <em>no mesmo dia</em>.</h2>
+    </div>
+    <div class="passos">
+      <div class="passo sobe"><div class="n">1</div><h3>Escolha o modelo e as fotos</h3><p>Clássico, rústico ou moderno. Suba até 3 fotos da galeria e ajuste o enquadramento com os dedos.</p></div>
+      <div class="passo sobe"><div class="n">2</div><h3>Coloque os detalhes</h3><p>Data, horário, cerimônia, recepção, traje com paleta de cores e uma mensagem de vocês. A prévia muda enquanto você digita.</p></div>
+      <div class="passo sobe"><div class="n">3</div><h3>Mande o link</h3><p>Algo como podeabrir.com.br/ana-e-pedro. Dá pra gerar um link com o nome de cada convidado, que aparece escrito no envelope.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec escuro">
+  <div class="wrap">
+    <div class="cabeca sobe">
+      <p class="eyebrow" style="color:var(--gold-2)">O que o convidado recebe</p>
+      <h2>Um convite que ele <em>abre, rola e responde</em>.</h2>
+      <p class="lead">Nada de PDF que ninguém abre ou arte perdida no meio das fotos do grupo.</p>
+    </div>
+    <div class="recursos">
+      <div class="recurso sobe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 7l9 6 9-6"/></svg><h3>O nome dele no envelope</h3><p>"Para Tia Marta." Cada convidado recebe o convite como se fosse só pra ele.</p></div>
+      <div class="recurso sobe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg><h3>Contagem regressiva</h3><p>Dias, horas, minutos e segundos até o sim, contando ao vivo.</p></div>
+      <div class="recurso sobe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg><h3>"Como chegar" com mapa</h3><p>Um toque abre o endereço da cerimônia e da recepção no mapa do celular.</p></div>
+      <div class="recurso sobe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><h3>Salvar na agenda</h3><p>A data vai direto pro calendário do celular, com o local junto.</p></div>
+      <div class="recurso sobe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><path d="M3 20c0-3 2.5-5 5-5s5 2 5 5M11 20c0-3 2.5-5 5-5s5 2 5 5"/></svg><h3>Traje com paleta de cores</h3><p>Esporte fino, social ou black tie, com as cores sugeridas pra ninguém errar.</p></div>
+      <div class="recurso sobe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><h3>Confirmação de presença</h3><p>O convidado responde ali mesmo, diz quantas pessoas vão e deixa um recado.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="wrap painel-demo">
+    <div class="cabeca sobe">
+      <p class="eyebrow">Pra vocês</p>
+      <h2>Você sabe quem vem <em>sem mandar mensagem</em> pra ninguém.</h2>
+      <p class="lead">Cada resposta cai no seu painel: quem confirmou, quantas pessoas, quem não vai e os recados. Na hora de fechar o buffet, o número está pronto.</p>
+    </div>
+    <div class="lista-demo sobe" aria-label="Exemplo do painel">
+      <div class="totais"><div><b>84</b><span>confirmados</span></div><div><b>131</b><span>pessoas</span></div><div><b>9</b><span>não vão</span></div></div>
+      <div style="margin-top:10px">
+        <div class="resp"><span class="av">M</span><div><b>Tia Marta</b><small>"Não perco por nada! Já separei o vestido."</small></div><span class="tag sim">3 pessoas</span></div>
+        <div class="resp"><span class="av">R</span><div><b>Rafael Souza</b><small>Confirmou há 2 horas</small></div><span class="tag sim">2 pessoas</span></div>
+        <div class="resp"><span class="av">L</span><div><b>Luciana</b><small>"Vou estar viajando, mas mando presente!"</small></div><span class="tag nao">Não vai</span></div>
+      </div>
+      <p class="micro" style="text-align:center">Exemplo ilustrativo</p>
+    </div>
+  </div>
+</section>
+
+<section class="sec" style="background:var(--bg2)">
+  <div class="wrap">
+    <div class="cabeca sobe">
+      <p class="eyebrow">Faça a conta</p>
+      <h2>Convite impresso sai de <em>R$10 a R$25</em> cada.</h2>
+      <p class="lead">Pra 150 convidados, isso é dinheiro que dá pra colocar na festa. E o impresso não avisa quem vai.</p>
+    </div>
+    <div class="conta">
+      <div class="papel sobe"><p class="rot">150 convites impressos</p><p class="valor">R$1.500+</p><p>Mais o motoboy ou os Correios. E você ainda precisa ligar pra saber quem vem.</p></div>
+      <div class="nosso sobe"><p class="rot">Pode Abrir</p><p class="valor">R$67</p><p>Para todos os convidados, com confirmação de presença, mapa e contagem regressiva.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="oferta">
+  <div class="wrap">
+    <div class="cabeca sobe" style="margin:0 auto;text-align:center">
+      <p class="eyebrow">Seu convite</p>
+      <h2>Tudo isso, <em>uma vez só</em>.</h2>
+    </div>
+    <div class="oferta sobe">
+      <p class="eyebrow">Pagamento único</p>
+      <p class="preco"><sup>R$</sup>67</p>
+      <p class="forma">no Pix ou em até 12x no cartão</p>
+      <ul>
+        <li>Convite interativo com envelope que abre</li>
+        <li>3 modelos: clássico, rústico e moderno</li>
+        <li>Até 3 fotos de vocês</li>
+        <li>Link com o nome de cada convidado</li>
+        <li>Confirmação de presença com painel</li>
+        <li>Mapa, agenda, contagem regressiva e traje</li>
+        <li>Edite quantas vezes quiser; o link não muda</li>
+        <li>No ar até 60 dias depois do casamento</li>
+      </ul>
+      <a class="btn" href="/checkout" data-checkout>Quero o meu convite</a>
+      <p class="micro">Acesso chega no seu e-mail assim que o pagamento é aprovado.</p>
+    </div>
+    <div class="garantia sobe">
+      <div class="selo">7<small>DIAS</small></div>
+      <div><h3>Não gostou, devolvemos</h3><p>Você tem 7 dias depois da compra. Se o convite não for o que esperava, é só responder o e-mail de acesso pedindo o dinheiro de volta.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" style="padding-top:20px">
+  <div class="wrap">
+    <div class="cabeca sobe" style="margin:0 auto;text-align:center"><p class="eyebrow">Dúvidas</p><h2>Perguntas <em>frequentes</em></h2></div>
+    <div class="faq">
+      <details><summary>Funciona no Android e no iPhone?</summary><p>Sim. O convite abre no navegador de qualquer celular, direto do WhatsApp. O convidado não instala nada.</p></details>
+      <details><summary>Preciso saber mexer com design?</summary><p>Não. Você escolhe o modelo, preenche os dados e sobe as fotos. A arte, o envelope e as animações já vêm prontos.</p></details>
+      <details><summary>Quantos convidados posso ter?</summary><p>Quantos quiser. O mesmo link serve pra todo mundo, e você ainda pode gerar links com o nome de cada pessoa.</p></details>
+      <details><summary>Posso mudar alguma coisa depois de enviar?</summary><p>Pode, quantas vezes precisar. Mudou o horário ou o local? Edite e publique de novo. O link continua o mesmo, então quem já recebeu vê a versão nova.</p></details>
+      <details><summary>Como eu vejo quem confirmou?</summary><p>No seu painel, com o nome, o número de pessoas e o recado de cada convidado. Você também pode baixar a lista.</p></details>
+      <details><summary>Até quando o convite fica no ar?</summary><p>Até 60 dias depois da data do casamento. Depois disso, as fotos e as respostas são apagadas. Antes, você pode baixar a lista de confirmações.</p></details>
+      <details><summary>É assinatura?</summary><p>Não. Você paga uma vez só, R$67, no Pix ou no cartão.</p></details>
+      <details><summary>Como recebo o acesso?</summary><p>No e-mail informado na compra, logo que o pagamento é aprovado. No Pix, costuma levar menos de um minuto.</p></details>
+    </div>
+  </div>
+</section>
+
+<section class="sec final" style="padding-top:40px">
+  <div class="wrap">
+    <h2 class="sobe">Os convidados vão <em>abrir</em>. E vão lembrar.</h2>
+    <a class="btn sobe" href="/checkout" data-checkout>Montar meu convite por R$67</a>
+    <p class="micro">Pagamento único. Garantia de 7 dias.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap"><span>Pode Abrir · convites de casamento digitais</span><span><a href="/entrar">Entrar</a></span></div>
+</footer>
+
+<script src="/js/checkout.js" defer></script>
+<script>
+// troca o modelo do convite dentro do celular
+const demo = document.getElementById("demo");
+document.querySelectorAll(".modelos button").forEach(b => b.onclick = () => {
+  document.querySelectorAll(".modelos button").forEach(x => x.classList.toggle("on", x === b));
+  demo.src = "/convite?para=Voc%C3%AA&modelo=" + b.dataset.m;
+});
+// aparecer ao rolar; sem IntersectionObserver, tudo já fica visível
+if ("IntersectionObserver" in window) {
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("dentro"); io.unobserve(e.target); } }), { rootMargin: "0px 0px -8% 0px" });
+  document.querySelectorAll(".sobe").forEach(el => io.observe(el));
+} else document.querySelectorAll(".sobe").forEach(el => el.classList.add("dentro"));
+</script>
+</body>
+</html>
