@@ -222,6 +222,22 @@ input, textarea, select { font: inherit; color: inherit; }
 .sugestao input { width: 100%; font-size: 16px; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 12px; min-height: 48px; }
 .sugestao button { border-radius: 10px; color: var(--soft); font-size: 20px; }
 .mais-sug { margin-top: 10px; font-size: 14px; font-weight: 700; color: var(--accent); padding: 8px 0; }
+/* mensagem de voz */
+.gravar { width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 56px; border-radius: 14px; background: var(--ink); color: #fff; font-weight: 700; font-size: 15px; margin-top: 14px; }
+.gravar .ponto { width: 12px; height: 12px; border-radius: 50%; background: #ef4444; }
+.gravando { display: flex; align-items: center; gap: 12px; margin-top: 14px; background: #fdf2f2; border: 1px solid #f5c2c2; border-radius: 14px; padding: 12px 12px 12px 16px; }
+.gravando .ponto { width: 12px; height: 12px; border-radius: 50%; background: #ef4444; animation: pulsa 1s ease-in-out infinite; }
+@keyframes pulsa { 50% { opacity: .25; } }
+.gravando b { font-variant-numeric: tabular-nums; font-size: 18px; }
+.gravando span { color: var(--soft); font-size: 13px; flex: 1; }
+.gravando button { background: #ef4444; color: #fff; font-weight: 700; border-radius: 10px; padding: 10px 16px; }
+.enviar-audio { display: block; text-align: center; margin-top: 10px; font-size: 14px; font-weight: 600; color: var(--soft); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; position: relative; }
+.enviar-audio input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.voz-pronta { margin-top: 14px; display: grid; gap: 10px; }
+.voz-pronta audio { width: 100%; }
+.voz-pronta .acoes-v { display: flex; gap: 8px; }
+.voz-pronta .acoes-v button { flex: 1; min-height: 44px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); font-weight: 700; font-size: 14px; }
+.roteiro { font-size: 13px; color: var(--soft); background: var(--bg); border-radius: 12px; padding: 10px 12px; margin-top: 10px; }
 .toast { position: fixed; left: 50%; bottom: calc(100px + env(safe-area-inset-bottom)); transform: translateX(-50%) translateY(20px); background: var(--ink); color: #fff; font-size: 14px; font-weight: 600; padding: 12px 18px; border-radius: 999px; opacity: 0; transition: .25s; z-index: 90; pointer-events: none; white-space: nowrap; }
 .toast.on { opacity: 1; transform: translateX(-50%); }
 </style>
@@ -315,6 +331,12 @@ input, textarea, select { font: inherit; color: inherit; }
       <section class="passo" data-passo="detalhes">
         <h1>Os <em>detalhes</em></h1>
         <p class="sub">Tudo aqui é opcional. O que ficar em branco não aparece no convite.</p>
+        <div class="bloco">
+          <h2>Som ao abrir o convite</h2>
+          <p class="dica">Com mensagem de voz, é a voz de vocês que toca no momento em que o convidado abre o envelope.</p>
+          <div class="campo"><div class="pilulas" id="som-tipo"><button type="button" data-v="sem">Sem som</button><button type="button" data-v="voz">Mensagem de voz</button></div></div>
+          <div id="voz-area"></div>
+        </div>
         <div class="bloco">
           <h2>Uma mensagem para os convidados</h2>
           <p class="dica">No convite, ela vai acendendo palavra por palavra enquanto a pessoa rola a tela.</p>
@@ -458,13 +480,15 @@ const S = {
   recursos: { padrinhos: true, pix: true }, // em produção vem do banco (o que foi comprado)
   pix: { tipo: "celular", chave: "", nome: "", cidade: "", mensagem: "", sugestoes: [
     { nome: "Jantar romântico", valor: 150 }, { nome: "Passeio na lua de mel", valor: 300 }, { nome: "Ajuda na casa nova", valor: 500 } ] },
-  padrinhos_msg: "", padrinhosLista: []
+  padrinhos_msg: "", padrinhosLista: [],
+  som: "sem", voz: null // voz: { blob?, url, remota?, tipo }
 };
 const CHAVE = "convite-rascunho";
 
 function salvarRascunho() {
   try {
-    const { fotos, ...resto } = S;
+    const { fotos, voz, ...resto } = S;
+    resto.vozRemota = S.voz && S.voz.remota && !S.voz.blob ? S.voz.url : null;
     resto.fotosRemotas = S.fotos.map(f => f && f.remota && !f.blob ? f.url : null);
     localStorage.setItem(CHAVE, JSON.stringify(resto));
     $("#salvo").textContent = "Rascunho salvo";
@@ -478,7 +502,8 @@ function lerRascunho() {
 /* fotos no IndexedDB, pra não perder se a página recarregar */
 const idb = () => new Promise((ok, erro) => { const r = indexedDB.open("convite", 1); r.onupgradeneeded = () => r.result.createObjectStore("fotos"); r.onsuccess = () => ok(r.result); r.onerror = erro; });
 async function guardarFotos() {
-  try { const db = await idb(); const tx = db.transaction("fotos", "readwrite"); S.fotos.forEach((f, i) => f && f.blob ? tx.objectStore("fotos").put({ blob: f.blob, filtro: f.filtro }, i) : tx.objectStore("fotos").delete(i)); } catch (_) {}
+  try { const db = await idb(); const tx = db.transaction("fotos", "readwrite"); S.fotos.forEach((f, i) => f && f.blob ? tx.objectStore("fotos").put({ blob: f.blob, filtro: f.filtro }, i) : tx.objectStore("fotos").delete(i));
+    S.voz && S.voz.blob ? tx.objectStore("fotos").put({ blob: S.voz.blob, tipo: S.voz.tipo }, "voz") : tx.objectStore("fotos").delete("voz"); } catch (_) {}
 }
 async function lerFotos() {
   try {
@@ -488,6 +513,11 @@ async function lerFotos() {
       r.onsuccess = () => { if (r.result) S.fotos[i] = { ...r.result, url: URL.createObjectURL(r.result.blob) }; ok(); };
       r.onerror = ok;
     })));
+    await new Promise(ok => {
+      const r = db.transaction("fotos").objectStore("fotos").get("voz");
+      r.onsuccess = () => { if (r.result) S.voz = { blob: r.result.blob, tipo: r.result.tipo, url: URL.createObjectURL(r.result.blob) }; ok(); };
+      r.onerror = ok;
+    });
   } catch (_) {}
 }
 
@@ -516,6 +546,7 @@ function paraConvite() {
     pix: S.recursos.pix && S.pix.chave.trim() ? { chave: chavePix(), nome: S.pix.nome.trim(), cidade: S.pix.cidade.trim(), mensagem: S.pix.mensagem.trim(),
       sugestoes: S.pix.sugestoes.filter(x => x.nome.trim() && Number(x.valor) > 0).map(x => ({ nome: x.nome.trim(), valor: Number(x.valor) })) } : null,
     padrinhos_msg: S.padrinhos_msg.trim(),
+    voz: S.som === "voz" && S.voz ? S.voz.url : "",
     musica: ""
   };
 }
@@ -593,6 +624,7 @@ function validar(passo) {
     if (!S.cerimonia.endereco.trim()) ok = marcaErro($("#c-end"), "Sem endereço o botão \"Como chegar\" não funciona.");
     if (S.recTipo === "outro" && !S.recepcao.nome.trim()) ok = marcaErro($("#r-nome"), "Escreva o nome do local da recepção.");
   }
+  if (passo === "detalhes" && S.som === "voz" && !S.voz) { toast(gravador ? "Termine a gravação primeiro" : "Grave a mensagem ou escolha \"Sem som\""); ok = false; }
   if (passo === "extras" && S.recursos.pix && S.pix.chave.trim() && !S.pix.nome.trim()) {
     ok = marcaErro($("#pix-nome"), "Coloque o nome como aparece no banco.");
   }
@@ -794,8 +826,8 @@ async function publicar() {
       $("#slug-erro").hidden = false; return;
     }
     btn.textContent = "Publicando…";
-    const { fotos, publicado, simulado, ...editor } = S;
-    const r = await API.publicar(paraConvite(), S.fotos.filter(Boolean), editor);
+    const { fotos, publicado, simulado, voz, ...editor } = S;
+    const r = await API.publicar(paraConvite(), S.fotos.filter(Boolean), editor, S.som === "voz" ? S.voz : null);
     S.publicado = r.url; S.simulado = !!r.simulado; salvarRascunho();
     mostrarPronto(); irPara(PASSOS.length);
   } catch (e) {
@@ -834,6 +866,66 @@ function pintarConvidados() {
   $$("[data-copiar]").forEach(b => b.onclick = () => copiar(linkPara(S.convidados[b.dataset.copiar])));
 }
 $("#editar").onclick = () => irPara(0);
+
+/* ============ MENSAGEM DE VOZ ============
+   Grava no próprio celular (MediaRecorder). No iPhone sai em .m4a; no Android,
+   o Chrome novo também grava .m4a — é o formato que todo celular toca. */
+let gravador = null, pedacos = [], relogio = null;
+const MAX_VOZ = 45;
+function pintarVozArea() {
+  const a = $("#voz-area");
+  if (S.som !== "voz") { a.innerHTML = ""; return; }
+  if (gravador) {
+    a.innerHTML = `<div class="gravando"><i class="ponto"></i><b id="voz-tempo">0:00</b><span>Gravando… até 0:${MAX_VOZ}</span><button type="button" id="voz-parar">Parar</button></div>`;
+    $("#voz-parar").onclick = pararGravacao;
+    return;
+  }
+  if (S.voz) {
+    a.innerHTML = `<div class="voz-pronta"><audio controls preload="metadata" src="${S.voz.url}"></audio>
+      <div class="acoes-v"><button type="button" id="voz-regravar">Regravar</button><button type="button" id="voz-tirar">Remover</button></div></div>`;
+    $("#voz-regravar").onclick = gravar;
+    $("#voz-tirar").onclick = () => { if (S.voz.blob) URL.revokeObjectURL(S.voz.url); S.voz = null; salvarRascunho(); pintarVozArea(); atualizarPrevia(); };
+    return;
+  }
+  a.innerHTML = `<button type="button" class="gravar" id="voz-gravar"><i class="ponto"></i>Gravar mensagem</button>
+    <label class="enviar-audio">ou enviar um áudio do celular<input type="file" accept="audio/*" id="voz-arquivo"></label>
+    <p class="roteiro">Até ${MAX_VOZ} segundos. Falem juntos, perto do celular, num lugar silencioso. Ex.: "Oi! Aqui é a ${esc(S.nome1 || "Ana")} e o ${esc(S.nome2 || "Pedro")}. A gente queria muito você com a gente nesse dia…"</p>`;
+  $("#voz-gravar").onclick = gravar;
+  $("#voz-arquivo").onchange = (e) => { const f = e.target.files[0]; if (f) definirVoz(f); };
+}
+async function gravar() {
+  if (!navigator.mediaDevices || !window.MediaRecorder) return toast("Este navegador não grava áudio. Use \"enviar um áudio\".");
+  let stream;
+  try { stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } }); }
+  catch (_) { return toast("Libere o microfone para gravar"); }
+  const tipo = ["audio/mp4", "audio/webm;codecs=opus", "audio/webm"].find(t => MediaRecorder.isTypeSupported(t)) || "";
+  gravador = new MediaRecorder(stream, tipo ? { mimeType: tipo, audioBitsPerSecond: 64000 } : undefined);
+  pedacos = [];
+  gravador.ondataavailable = (e) => { if (e.data && e.data.size) pedacos.push(e.data); };
+  gravador.onstop = () => {
+    stream.getTracks().forEach(t => t.stop());
+    const blob = new Blob(pedacos, { type: (gravador.mimeType || tipo || "audio/mp4").split(";")[0] });
+    gravador = null;
+    if (blob.size < 2000) { toast("A gravação ficou vazia. Tente de novo."); pintarVozArea(); return; }
+    definirVoz(blob);
+  };
+  gravador.start(250);
+  const inicio = Date.now();
+  pintarVozArea();
+  relogio = setInterval(() => {
+    const seg = Math.floor((Date.now() - inicio) / 1000);
+    const el = $("#voz-tempo"); if (el) el.textContent = `0:${String(seg).padStart(2, "0")}`;
+    if (seg >= MAX_VOZ) pararGravacao();
+  }, 250);
+}
+function pararGravacao() { clearInterval(relogio); if (gravador && gravador.state !== "inactive") gravador.stop(); }
+function definirVoz(blob) {
+  if (blob.size > 3 * 1024 * 1024) { toast("Áudio grande demais (máximo 3 MB)"); return; }
+  if (S.voz && S.voz.blob) URL.revokeObjectURL(S.voz.url);
+  S.voz = { blob, tipo: blob.type || "audio/mp4", url: URL.createObjectURL(blob) };
+  salvarRascunho(); pintarVozArea(); atualizarPrevia();
+  toast("Mensagem de voz pronta");
+}
 
 /* ============ ORDERBUMPS (cadeado igual ao ViralFlow) ============ */
 const PRECO = (k) => ((window.CONFIG && window.CONFIG.PRECOS) || { padrinhos: 27, pix: 19.9 })[k];
@@ -942,6 +1034,7 @@ function toast(t) { const el = $("#toast"); el.textContent = t; el.classList.add
 (async function () {
   lerRascunho();
   await lerFotos();
+  if (S.vozRemota && !S.voz) S.voz = { url: S.vozRemota, remota: true };
   if (S.fotosRemotas) S.fotosRemotas.forEach((u, i) => { if (u && !S.fotos[i]) S.fotos[i] = { url: u, remota: true }; });
   if (window.API && API.meuConvite) {
     if (!(await exigirLogin("/criar"))) return;
@@ -953,6 +1046,7 @@ function toast(t) { const el = $("#toast"); el.textContent = t; el.classList.add
       Object.assign(S, ed);
       S.fotos = [null, null, null];
       (cv.dados.fotos || []).forEach((u, i) => { S.fotos[i] = { url: u, remota: true }; });
+      if (cv.dados.voz) S.voz = { url: cv.dados.voz, remota: true };
     }
     S.publicado = cv.publicado && cv.slug ? (window.CONFIG.SITE + "/" + cv.slug) : (S.simulado ? null : S.publicado);
     S.simulado = false;
@@ -967,6 +1061,7 @@ function toast(t) { const el = $("#toast"); el.textContent = t; el.classList.add
   $("#r-nome").value = S.recepcao.nome; $("#r-end").value = S.recepcao.endereco; $("#r-hora").value = S.recepcao.hora;
   $("#conta-msg").textContent = S.mensagem.length + "/280";
   pintarModelos(); pintarFotos(); pintarCores(); pintarExtras();
+  pilulas("som-tipo", () => S.som, v => S.som = v, pintarVozArea);
   pilulas("rec-tipo", () => S.recTipo, v => S.recTipo = v, () => { $("#rec-campos").hidden = S.recTipo !== "outro"; $("#rec-hora-c").hidden = S.recTipo === "nao"; });
   pilulas("traje-tipo", () => S.traje.texto, v => S.traje.texto = v);
   if (S.publicado) { mostrarPronto(); irPara(PASSOS.length); } else irPara(0);

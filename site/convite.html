@@ -342,6 +342,31 @@ main { position: relative; z-index: 2; }
 .pedido .resposta-p { margin-top: 24px; }
 .pedido .resposta-p .titulo { margin-top: 0; }
 
+/* ---------- mensagem de voz dos noivos ---------- */
+.dica-voz { font-size: 13px; color: var(--ink-soft); display: flex; align-items: center; gap: 8px; margin-top: -14px; }
+.dica-voz svg { width: 16px; height: 16px; color: var(--accent); }
+.aberto .dica-voz { opacity: 0; transition: opacity .3s; }
+.voz {
+  position: fixed; left: 50%; transform: translate(-50%, 20px); bottom: calc(16px + env(safe-area-inset-bottom)); z-index: 45;
+  display: flex; align-items: center; gap: 12px; padding: 8px 8px 8px 8px; border-radius: 999px;
+  background: var(--card); color: var(--ink); box-shadow: 0 12px 30px -10px rgba(0,0,0,.35); border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+  opacity: 0; pointer-events: none; transition: opacity .5s, transform .5s; max-width: calc(100vw - 32px);
+}
+.voz.mostra { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+.voz .mono-v { width: 38px; height: 38px; border-radius: 50%; background: var(--accent); color: var(--paper); display: grid; place-items: center; font-family: var(--display); font-style: italic; font-size: 15px; flex: none; }
+[data-modelo="moderno"] .voz .mono-v { color: #111110; }
+.voz .txt { display: flex; flex-direction: column; line-height: 1.2; min-width: 0; }
+.voz .txt b { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.voz .txt span { font-size: 11px; color: var(--ink-soft); }
+.voz .ondas { display: flex; align-items: center; gap: 2px; height: 18px; }
+.voz .ondas i { width: 3px; height: 4px; border-radius: 2px; background: var(--accent); }
+.voz.tocando .ondas i { animation: onda 1s ease-in-out infinite; }
+.voz.tocando .ondas i:nth-child(2) { animation-delay: .15s; } .voz.tocando .ondas i:nth-child(3) { animation-delay: .3s; }
+.voz.tocando .ondas i:nth-child(4) { animation-delay: .45s; } .voz.tocando .ondas i:nth-child(5) { animation-delay: .6s; }
+@keyframes onda { 0%, 100% { height: 4px; } 50% { height: 18px; } }
+.voz button { width: 38px; height: 38px; border-radius: 50%; background: var(--bg); color: var(--ink); display: grid; place-items: center; flex: none; }
+.voz button svg { width: 16px; height: 16px; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
@@ -363,6 +388,7 @@ main { position: relative; z-index: 2; }
       <button class="env-clique" id="abrir" aria-label="Abrir convite"></button>
     </div>
     <p class="toque">Toque para abrir</p>
+    <p class="dica-voz" id="dica-voz" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></svg>Com uma mensagem de voz dos noivos</p>
   </div>
 </section>
 <div id="iris" aria-hidden="true"></div>
@@ -373,6 +399,13 @@ main { position: relative; z-index: 2; }
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
 </button>
 <audio id="audio" loop preload="none"></audio>
+<audio id="audio-voz" preload="auto" playsinline></audio>
+<div class="voz" id="voz" role="region" aria-label="Mensagem de voz dos noivos">
+  <span class="mono-v" id="voz-mono"></span>
+  <span class="txt"><b id="voz-titulo"></b><span id="voz-estado">Mensagem de voz</span></span>
+  <span class="ondas" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+  <button type="button" id="voz-btn" aria-label="Pausar"></button>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="/js/config.js"></script>
@@ -556,8 +589,18 @@ function montar(c) {
   timerContagem = setInterval(contagem, 1000);
 
   const audio = $("#audio");
-  if (c.musica) { audio.src = c.musica; $("#btn-musica").classList.add("tem"); }
+  if (c.musica && !c.voz) { audio.src = c.musica; $("#btn-musica").classList.add("tem"); }
   else { audio.removeAttribute("src"); $("#btn-musica").classList.remove("tem"); }
+
+  // mensagem de voz: aviso no envelope + player
+  const av = $("#audio-voz");
+  $("#dica-voz").hidden = !c.voz;
+  if (c.voz) {
+    if (av.getAttribute("src") !== c.voz) av.src = c.voz;
+    $("#voz-mono").innerHTML = iniciais(c);
+    $("#voz-titulo").textContent = `${c.nome1} & ${c.nome2}`;
+    pintarVoz();
+  } else { av.pause(); av.removeAttribute("src"); $("#voz").classList.remove("mostra"); }
 }
 
 let diasAnimados = false;
@@ -855,7 +898,32 @@ function petalas(n) {
 
 /* ---------- música ---------- */
 const audio = $("#audio");
-function tocar() { if (!C || !C.musica) return; audio.play().then(() => $("#btn-musica").classList.add("tocando")).catch(() => {}); }
+function tocar() {
+  if (!C) return;
+  // O iPhone só deixa tocar som dentro de um toque da pessoa: por isso a voz
+  // começa aqui, no toque do envelope, e não num setTimeout depois.
+  if (C.voz) { tocarVoz(); return; }
+  if (!C.musica) return;
+  audio.play().then(() => $("#btn-musica").classList.add("tocando")).catch(() => {});
+}
+const audioVoz = $("#audio-voz");
+const ICON_PAUSA = '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';
+const ICON_PLAY = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg>';
+const ICON_DENOVO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>';
+function tocarVoz() {
+  if (audioVoz.ended) audioVoz.currentTime = 0;
+  $("#voz").classList.add("mostra");
+  audioVoz.play().catch(() => pintarVoz());
+}
+function pintarVoz() {
+  const v = $("#voz"), tocando = !audioVoz.paused && !audioVoz.ended;
+  v.classList.toggle("tocando", tocando);
+  $("#voz-estado").textContent = tocando ? "Tocando mensagem de voz" : audioVoz.ended ? "Ouvir de novo" : "Mensagem de voz";
+  $("#voz-btn").innerHTML = tocando ? ICON_PAUSA : audioVoz.ended ? ICON_DENOVO : ICON_PLAY;
+  $("#voz-btn").setAttribute("aria-label", tocando ? "Pausar" : "Ouvir");
+}
+["play", "pause", "ended"].forEach(ev => audioVoz.addEventListener(ev, pintarVoz));
+$("#voz-btn").onclick = () => { if (!audioVoz.paused && !audioVoz.ended) audioVoz.pause(); else tocarVoz(); };
 $("#btn-musica").onclick = () => {
   if (audio.paused) tocar(); else { audio.pause(); $("#btn-musica").classList.remove("tocando"); }
 };
@@ -869,6 +937,8 @@ function mostrarAberto() {
   document.body.classList.remove("trancado");
 }
 function fecharEnvelope() {
+  const av = document.getElementById("audio-voz"); av.pause(); if (av.readyState) av.currentTime = 0;
+  $("#voz").classList.remove("mostra");
   $("#tela-envelope").classList.remove("aberto", "saiu");
   document.body.classList.add("trancado");
   window.scrollTo(0, 0);
@@ -877,7 +947,7 @@ window.addEventListener("message", (ev) => {
   if (ev.origin !== location.origin || !ev.data || ev.data.tipo !== "dados") return;
   const y = window.scrollY;
   montar(ev.data.convite);
-  if (ev.data.aberto) { mostrarAberto(); diasAnimados = true; contagem(); window.scrollTo(0, y); }
+  if (ev.data.aberto) { mostrarAberto(); diasAnimados = true; contagem(); window.scrollTo(0, y); if (C.voz) { $("#voz").classList.add("mostra"); pintarVoz(); } }
   else fecharEnvelope();
 });
 

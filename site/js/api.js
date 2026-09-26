@@ -59,7 +59,8 @@
     },
 
     // fotos: [{ blob?, url }] na ordem (capa primeiro). Sobe só as novas; apaga as que saíram.
-    async publicar(convite, fotos, editor) {
+    // voz: { blob?, url, remota?, tipo } ou null (sem som)
+    async publicar(convite, fotos, editor, voz) {
       const s = await sessao();
       if (!s) throw new Error("sessão expirou");
       const cv = await meuConvite();
@@ -78,7 +79,19 @@
         urls.push(url);
       }
 
-      const dados = { ...convite, fotos: urls, editor };
+      // mensagem de voz: sobe só se for nova
+      let vozUrl = "";
+      if (voz && voz.blob && !voz.remota) {
+        const tipo = voz.tipo || voz.blob.type || "audio/mp4";
+        const ext = /webm/.test(tipo) ? "webm" : /mpeg|mp3/.test(tipo) ? "mp3" : /ogg/.test(tipo) ? "ogg" : /wav/.test(tipo) ? "wav" : "m4a";
+        const caminho = `${uid}/${cv.id}-voz-${Date.now()}.${ext}`;
+        const { error } = await SB.storage.from("audios").upload(caminho, voz.blob, { contentType: tipo.split(";")[0], upsert: true, cacheControl: "31536000" });
+        if (error) throw error;
+        vozUrl = SB.storage.from("audios").getPublicUrl(caminho).data.publicUrl;
+        voz.url = vozUrl; voz.remota = true;
+      } else if (voz && voz.url) vozUrl = voz.url;
+
+      const dados = { ...convite, fotos: urls, voz: vozUrl, editor };
       const { error } = await SB.from("convites").update({
         slug: convite.slug, modelo: convite.modelo, dados, publicado: true, data_evento: convite.data.slice(0, 10),
       }).eq("id", cv.id);
@@ -93,6 +106,14 @@
         const manter = new Set(urls.map((u) => decodeURIComponent(u.split("/").pop())));
         const velhas = (lista || []).filter((o) => o.name.startsWith(cv.id) && !manter.has(o.name)).map((o) => `${uid}/${o.name}`);
         if (velhas.length) await SB.storage.from("fotos").remove(velhas);
+      } catch (_) {}
+
+      // limpa áudios antigos (ou todos, se o casal escolheu "sem som")
+      try {
+        const { data: lista } = await SB.storage.from("audios").list(uid, { limit: 100 });
+        const manter = vozUrl ? decodeURIComponent(vozUrl.split("/").pop()) : "";
+        const velhos = (lista || []).filter((o) => o.name.startsWith(cv.id) && o.name !== manter).map((o) => `${uid}/${o.name}`);
+        if (velhos.length) await SB.storage.from("audios").remove(velhos);
       } catch (_) {}
 
       return { url: C.SITE + "/" + convite.slug };
