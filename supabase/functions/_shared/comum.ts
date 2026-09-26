@@ -14,9 +14,10 @@ import { createClient, SupabaseClient } from "jsr:@supabase/supabase-js@2";
 // ---- PREÇO MORA AQUI. O navegador nunca manda valor. ----
 // Mudou preço? Muda a página de vendas e o checkout.html no MESMO deploy.
 export const PRECOS = {
-  base: 67.0,       // convite interativo
-  padrinhos: 27.0,  // orderbump: convite dos padrinhos
-  pix: 19.9,        // orderbump: presentes no Pix
+  // ⚠️ PREÇO DE TESTE (26/09) — voltar pra 67 / 27 / 19.9
+  base: 0.5,        // convite interativo
+  padrinhos: 0.5,   // orderbump: convite dos padrinhos
+  pix: 0.5,         // orderbump: presentes no Pix
 } as const;
 export const PRODUTO = "Pode Abrir - Convite de casamento";
 

@@ -10,6 +10,8 @@
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 15px; line-height: 1.45; }
 .ck * { box-sizing: border-box; margin: 0; padding: 0; }
 .ck [hidden] { display: none !important; }
+.ck h1, .ck h2, .ck h3, .ck h4 { font-family: inherit; letter-spacing: normal; line-height: 1.3; text-wrap: initial; }
+.ck-col > *, #ck-form, #ck-tela-pix, #ck-tela-ok, .ck-card { min-width: 0; max-width: 100%; }
 .ck:focus { outline: none; }
 .ck :focus-visible { outline: 2px solid #9ca3af; outline-offset: 2px; }
 .ck-top { position: sticky; top: 0; z-index: 2; background: #fff; border-bottom: 1px solid #e5e7eb;
@@ -108,8 +110,8 @@
 .ck-qr h3 { font-size: 17px; font-weight: 800; }
 .ck-qr > p { font-size: 13px; color: #6b7280; }
 .ck-qr img { width: 200px; height: 200px; border: 1px solid #e5e7eb; border-radius: 14px; padding: 8px; background: #fff; }
-.ck-copiar { width: 100%; display: flex; gap: 8px; align-items: center; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px 14px; cursor: pointer; font: inherit; color: #4b5563; text-align: left; }
-.ck-copiar code { flex: 1; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ck-copiar { width: 100%; min-width: 0; display: flex; gap: 8px; align-items: center; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px 14px; cursor: pointer; font: inherit; color: #4b5563; text-align: left; }
+.ck-copiar code { flex: 1; min-width: 0; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ck-copiar b { font-size: 13px; color: #111827; flex: none; }
 .ck-esperando { width: 100%; display: flex; gap: 8px; align-items: center; justify-content: center; color: #b45309; background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 10px; font-size: 12.5px; font-weight: 600; }
 .ck-ja { background: none; border: 0; color: #4b5563; text-decoration: underline; text-underline-offset: 3px; font-family: inherit; font-weight: 600; font-size: 13px; cursor: pointer; }
