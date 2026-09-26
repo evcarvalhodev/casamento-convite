@@ -64,10 +64,16 @@ a { color: var(--ink); }
 .barras { display: flex; align-items: flex-end; gap: 4px; height: 120px; margin-top: 12px; }
 .barras div { flex: 1; background: var(--gold); border-radius: 4px 4px 0 0; min-height: 2px; position: relative; }
 .barras div:hover::after { content: attr(data-t); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--ink); color: #fff; font-size: 11px; padding: 4px 6px; border-radius: 6px; white-space: nowrap; margin-bottom: 4px; }
+.login { max-width: 360px; margin: 60px auto; background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 26px 22px; display: grid; gap: 12px; }
+.login h1 { font-family: "Instrument Serif", serif; font-weight: 400; font-size: 32px; }
+.login label { display: grid; gap: 6px; font-weight: 700; font-size: 13px; }
+.login input { font: inherit; font-size: 16px; border: 1px solid var(--line); border-radius: 10px; padding: 0 12px; min-height: 46px; }
+.login button { background: var(--ink); color: #fff; border: 0; border-radius: 999px; min-height: 48px; font: 800 15px "Manrope", sans-serif; cursor: pointer; }
+.login .erro { color: var(--erro); font-size: 13.5px; }
 </style>
 </head>
 <body>
-<header><div class="in"><span class="marca">Pode <em>Abrir</em> · ADM</span><div class="dir"><span id="quem"></span><button type="button" id="recarregar">Atualizar</button><button type="button" onclick="sair()">Sair</button></div></div></header>
+<header><div class="in"><span class="marca">Pode <em>Abrir</em> · ADM</span><div class="dir"><span id="quem"></span><button type="button" id="recarregar">Atualizar</button><button type="button" onclick="SB.auth.signOut().then(() => location.reload())">Sair</button></div></div></header>
 <main id="app"><div class="vazio">Carregando…</div></main>
 <div class="toast" id="toast"></div>
 
@@ -191,11 +197,29 @@ async function carregar() {
   }
 }
 $("#recarregar").onclick = carregar;
+// Login do ADM por e-mail e senha (o casal entra por link no e-mail, em /entrar).
+function telaLogin() {
+  $("#app").innerHTML = `<form class="login" id="f-login">
+    <h1>Painel ADM</h1>
+    <label>E-mail<input type="email" id="l-email" autocomplete="username" required></label>
+    <label>Senha<input type="password" id="l-senha" autocomplete="current-password" required></label>
+    <button type="submit" id="l-btn">Entrar</button>
+    <p class="erro" id="l-erro" hidden></p></form>`;
+  $("#f-login").onsubmit = async (e) => {
+    e.preventDefault();
+    $("#l-btn").disabled = true; $("#l-erro").hidden = true;
+    const { data, error } = await SB.auth.signInWithPassword({ email: $("#l-email").value.trim(), password: $("#l-senha").value });
+    $("#l-btn").disabled = false;
+    if (error) { $("#l-erro").textContent = "E-mail ou senha incorretos."; $("#l-erro").hidden = false; return; }
+    $("#quem").textContent = data.user.email;
+    carregar();
+  };
+}
 (async () => {
   if (!window.API) { $("#app").innerHTML = '<div class="bloqueio"><h1>Não configurado</h1><p>Preencha o js/config.js com as chaves do Supabase.</p></div>'; return; }
-  const s = await exigirLogin("/adm"); if (!s) return;
-  $("#quem").textContent = s.user.email;
-  carregar();
+  const { data: { session } } = await SB.auth.getSession();
+  if (session) { $("#quem").textContent = session.user.email; return carregar(); }
+  telaLogin();
 })();
 </script>
 </body>
