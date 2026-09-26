@@ -53,7 +53,7 @@ button:disabled { opacity: .5; }
 <script src="/js/api.js"></script>
 <script>
 const volta = new URLSearchParams(location.search).get("volta");
-const destino = volta && volta.startsWith("/") && !volta.startsWith("//") ? volta : "/criar";
+const destino = volta && volta.startsWith("/") && !volta.startsWith("//") ? volta : "/painel";
 // Já está logado? Vai direto.
 if (window.SB) SB.auth.getSession().then(({ data }) => { if (data.session) location.replace(destino); });
 

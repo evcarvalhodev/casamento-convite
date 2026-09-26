@@ -5,13 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#f6f1e9">
-<title>Confirmações · Pode Abrir</title>
+<title>Meu convite · Pode Abrir</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root { --bg: #f6f1e9; --card: #fffdf9; --line: #e4dacb; --ink: #1f1a14; --soft: #6f6456; --faint: #9c8f7e; --gold: #9a7a46; --gold-bg: #f3e8d4; --ok: #2f6b3a; --ok-bg: #e3efe2; --erro: #9b3b2f; --erro-bg: #f3e2df; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
+[hidden] { display: none !important; }
 body { background: var(--bg); color: var(--ink); font-family: "Manrope", system-ui, sans-serif; font-size: 16px; line-height: 1.5; }
 :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 .wrap { max-width: 760px; margin: 0 auto; padding: calc(16px + env(safe-area-inset-top)) 16px calc(48px + env(safe-area-inset-bottom)); }
@@ -48,18 +49,65 @@ h1 { font-family: "Instrument Serif", serif; font-weight: 400; font-size: clamp(
 .tag.nao { background: var(--erro-bg); color: var(--erro); }
 .apagar { border: 0; background: none; color: var(--faint); font-size: 12px; cursor: pointer; margin-top: 6px; text-decoration: underline; }
 .vazio { padding: 40px 20px; text-align: center; color: var(--soft); }
+.novo { margin-top: 18px; background: var(--ok-bg); color: var(--ok); border-radius: 14px; padding: 12px 16px; font-weight: 700; font-size: 15px; }
+.acoes-envio { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin-top: 10px; }
+.acoes-envio .btn { width: 100%; gap: 8px; }
+.acoes-envio .btn.whats { background: #1f8f4e; color: #fff; border-color: #1f8f4e; }
+.acoes-envio .btn.on { border-color: var(--gold); background: var(--gold-bg); }
+.acoes-envio .btn svg { width: 16px; height: 16px; flex: none; }
+.gerador { margin-top: 10px; background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 18px 16px; }
+.gerador h2 { font-size: 16px; font-weight: 800; }
+.gerador .dica { font-size: 13.5px; color: var(--soft); margin-top: 2px; }
+.gerador .linha { display: flex; gap: 8px; margin-top: 12px; }
+.gerador .linha input { flex: 1; min-width: 0; font: inherit; font-size: 16px; border: 1px solid var(--line); background: var(--bg); border-radius: 12px; padding: 0 14px; min-height: 48px; }
+.gerador .pilulas { display: flex; gap: 6px; margin-top: 12px; }
+.gerador .pilulas button { border: 1px solid var(--line); background: var(--bg); border-radius: 999px; padding: 8px 14px; font: 600 14px "Manrope", sans-serif; cursor: pointer; }
+.gerador .pilulas button.on { border-color: var(--gold); background: var(--gold-bg); }
+.itens { display: grid; gap: 8px; margin-top: 12px; }
+.itens .item { display: flex; align-items: center; gap: 8px; background: var(--bg); border-radius: 12px; padding: 8px 8px 8px 14px; }
+.itens .item span { flex: 1; font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.itens .item button, .itens .item a { font: 700 13px "Manrope", sans-serif; padding: 8px 12px; border-radius: 999px; background: var(--card); border: 1px solid var(--line); color: var(--ink); text-decoration: none; cursor: pointer; }
+.travado { text-align: center; display: grid; justify-items: center; gap: 10px; padding: 6px 0; }
+.travado .cad { width: 56px; height: 56px; border-radius: 50%; background: var(--gold-bg); color: var(--gold); display: grid; place-items: center; }
+.travado .cad svg { width: 24px; height: 24px; }
+.travado p { color: var(--soft); font-size: 14px; max-width: 36ch; }
+.travado .btn { width: 100%; }
+h3.secao { font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--soft); font-weight: 800; margin-top: 30px; }
+.casa { display: block; }
+.previa { display: none; }
+@media (min-width: 1040px) {
+  .casa { display: grid; grid-template-columns: minmax(0, 1fr) 420px; gap: 40px; max-width: 1240px; margin: 0 auto; padding: 0 24px; }
+  .casa .wrap { max-width: none; margin: 0; }
+  .previa { display: block; position: sticky; top: 24px; align-self: start; padding-top: 24px; text-align: center; }
+  .previa .celular { width: 390px; height: min(800px, calc(100dvh - 110px)); margin: 0 auto; border-radius: 44px; border: 10px solid #1b1814; overflow: hidden; background: #000; box-shadow: 0 30px 60px -30px rgba(40, 28, 12, .5); }
+  .previa iframe { width: 100%; height: 100%; border: 0; display: block; background: #fff; }
+  .previa .btn { margin-top: 14px; border-radius: 999px; min-height: 40px; font-size: 13px; }
+}
 .toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); transform: translateX(-50%); background: var(--ink); color: #fff; padding: 12px 18px; border-radius: 999px; font-weight: 700; font-size: 14px; opacity: 0; transition: .25s; pointer-events: none; }
 .toast.on { opacity: 1; }
 </style>
 </head>
 <body>
+<div class="casa">
 <div class="wrap">
-  <div class="topo"><a class="marca" href="/">Pode <em>Abrir</em></a><nav><a href="/criar">Editar convite</a><button type="button" onclick="sair()">Sair</button></nav></div>
+  <div class="topo"><a class="marca" href="/">Pode <em>Abrir</em></a><nav><a href="/criar?editar=1">Editar convite</a><button type="button" onclick="sair()">Sair</button></nav></div>
   <h1 id="titulo">Quem vem</h1>
   <p class="sub" id="sub">Carregando…</p>
-  <div class="link" id="caixa-link" hidden><input id="link" readonly aria-label="Link do convite"><button class="btn" id="copiar" type="button">Copiar</button></div>
+  <p class="novo" id="novo" hidden>🎉 Seu convite está no ar! Agora é mandar o link pros convidados.</p>
+  <div id="envio" hidden>
+    <div class="link"><input id="link" readonly aria-label="Link do convite"><button class="btn" id="copiar" type="button">Copiar</button></div>
+    <div class="acoes-envio">
+      <a class="btn whats" id="whats" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.6-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.3.5-.4.4c-.1.2-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.2.1.7-.1 1.3z"/></svg>Enviar no WhatsApp</a>
+      <button class="btn" type="button" data-painel="convidados">Link com nome do convidado</button>
+      <button class="btn" type="button" data-painel="padrinhos">Links dos padrinhos</button>
+      <a class="btn" id="abrir-convite" target="_blank" rel="noopener">Ver o convite</a>
+    </div>
+    <div class="gerador" id="gerador" hidden></div>
+  </div>
 
-  <div class="totais"><div><b id="t-sim">0</b><span>confirmaram</span></div><div><b id="t-pessoas">0</b><span>pessoas</span></div><div><b id="t-nao">0</b><span>não vão</span></div></div>
+  <h3 class="secao">Respostas</h3>
+
+  <div class="totais" style="margin-top:12px"><div><b id="t-sim">0</b><span>confirmaram</span></div><div><b id="t-pessoas">0</b><span>pessoas</span></div><div><b id="t-nao">0</b><span>não vão</span></div></div>
 
   <div class="barra">
     <div class="filtros" id="filtros"><button type="button" data-f="todos" class="on">Todos</button><button type="button" data-f="sim">Vão</button><button type="button" data-f="nao">Não vão</button><button type="button" data-f="padrinhos">Padrinhos</button></div>
@@ -69,11 +117,17 @@ h1 { font-family: "Instrument Serif", serif; font-weight: 400; font-size: clamp(
   </div>
   <div class="lista" id="lista"><div class="vazio">Carregando…</div></div>
 </div>
+<aside class="previa" id="previa" hidden aria-label="Prévia do convite">
+  <div class="celular"><iframe id="previa-frame" title="Prévia do convite"></iframe></div>
+  <button class="btn" type="button" id="rever">Ver abrindo o envelope</button>
+</aside>
+</div>
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="/js/config.js"></script>
 <script src="/js/api.js"></script>
+<script src="/js/checkout.js"></script>
 <script>
 const $ = (s) => document.querySelector(s);
 const esc = (t) => String(t ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -119,8 +173,14 @@ async function carregar() {
     const d = convite.dados || {};
     $("#titulo").textContent = d.nome1 ? `${d.nome1} & ${d.nome2}` : "Quem vem";
     if (convite.publicado && convite.slug) {
-      $("#sub").textContent = "Respostas do convite de vocês.";
-      $("#link").value = CONFIG.SITE + "/" + convite.slug; $("#caixa-link").hidden = false;
+      $("#sub").textContent = "Mande o convite e acompanhe quem vem.";
+      linkBase = CONFIG.SITE + "/" + convite.slug;
+      $("#link").value = linkBase; $("#envio").hidden = false;
+      $("#whats").href = "https://wa.me/?text=" + encodeURIComponent(`Você está convidado para o nosso casamento! 💍\nAbra o convite: ${linkBase}`);
+      $("#abrir-convite").href = linkBase;
+      if (matchMedia("(min-width: 1040px)").matches) { $("#previa-frame").src = linkBase; $("#previa").hidden = false; }
+      const ed = (convite.dados && convite.dados.editor) || {};
+      listas.convidados = ed.convidados || []; listas.padrinhos = ed.padrinhosLista || [];
     } else $("#sub").innerHTML = 'O convite ainda não foi publicado. <a href="/criar">Terminar de montar</a>';
     pintar();
   } catch (e) {
@@ -128,10 +188,77 @@ async function carregar() {
   }
 }
 
+/* ---------- enviar: links por convidado e por padrinho ---------- */
+let linkBase = "";
+const listas = { convidados: [], padrinhos: [] };
+let aberto = null, genero = "padrinho";
+const CAD = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+const preco = (k) => "R$" + Number(((window.CONFIG || {}).PRECOS || {})[k] || 27).toFixed(2).replace(".", ",");
+
+// As listas moram no convite (dados.editor), pra aparecer em qualquer aparelho.
+async function salvarListas() {
+  const d = convite.dados || {};
+  d.editor = { ...(d.editor || {}), convidados: listas.convidados, padrinhosLista: listas.padrinhos };
+  const { error } = await SB.from("convites").update({ dados: d }).eq("id", convite.id);
+  if (error) toast("Não salvou a lista agora");
+}
+const linkConvidado = (n) => linkBase + "?para=" + encodeURIComponent(n);
+const linkPadrinho = (x) => linkBase + "?padrinho=" + encodeURIComponent(x.nome) + (x.m ? "&m=1" : "");
+const zap = (texto) => "https://wa.me/?text=" + encodeURIComponent(texto);
+async function copiar(t) { try { await navigator.clipboard.writeText(t); toast("Link copiado"); } catch (_) { prompt("Copie o link:", t); } }
+
+function abrirGerador(qual) {
+  aberto = aberto === qual ? null : qual;
+  $("#rever").onclick = () => { $("#previa-frame").src = linkBase + "?r=" + Date.now(); };
+document.querySelectorAll("[data-painel]").forEach(b => b.classList.toggle("on", b.dataset.painel === aberto));
+  const g = $("#gerador");
+  g.hidden = !aberto;
+  if (!aberto) return;
+  if (aberto === "padrinhos" && !(convite.recursos && convite.recursos.padrinhos)) {
+    g.innerHTML = `<div class="travado"><div class="cad">${CAD}</div><b>Parece que você ainda não adquiriu esse produto</b>
+      <p>O mesmo envelope, com a pergunta "Quer ser nosso padrinho?". Cada padrinho recebe o seu, com o nome no envelope, e a resposta aparece aqui.</p>
+      <button class="btn escuro" type="button" id="comprar-pad">Adquirir Convite dos Padrinhos por ${preco("padrinhos")}</button></div>`;
+    $("#comprar-pad").onclick = () => abrirCheckout({ addon: "padrinhos", aoAprovar: () => location.reload() });
+    return;
+  }
+  const pad = aberto === "padrinhos";
+  g.innerHTML = `<h2>${pad ? "Links dos padrinhos" : "Link com o nome do convidado"}</h2>
+    <p class="dica">${pad ? "O envelope abre com o nome e a pergunta. A resposta aparece aqui, na aba Padrinhos." : "O nome aparece no envelope, e a pessoa não precisa digitar na hora de confirmar."}</p>
+    ${pad ? '<div class="pilulas" id="genero"><button type="button" data-g="padrinho">Padrinho</button><button type="button" data-g="madrinha">Madrinha</button></div>' : ""}
+    <div class="linha"><input id="novo-nome" maxlength="60" placeholder="${pad ? "Ex.: Carlos" : "Ex.: Tia Marta"}" aria-label="Nome"><button class="btn escuro" id="add" type="button">Criar</button></div>
+    <div class="itens" id="itens"></div>`;
+  if (pad) {
+    const pinta = () => document.querySelectorAll("#genero button").forEach(b => b.classList.toggle("on", b.dataset.g === genero));
+    document.querySelectorAll("#genero button").forEach(b => b.onclick = () => { genero = b.dataset.g; pinta(); });
+    pinta();
+  }
+  const add = async () => {
+    const n = $("#novo-nome").value.trim(); if (!n) return;
+    if (pad) listas.padrinhos.unshift({ nome: n, m: genero === "madrinha" }); else listas.convidados.unshift(n);
+    $("#novo-nome").value = ""; pintarItens(); await salvarListas();
+  };
+  $("#add").onclick = add;
+  $("#novo-nome").addEventListener("keydown", (e) => { if (e.key === "Enter") add(); });
+  pintarItens();
+}
+function pintarItens() {
+  const pad = aberto === "padrinhos";
+  const l = pad ? listas.padrinhos : listas.convidados;
+  $("#itens").innerHTML = l.map((x, i) => {
+    const nome = pad ? x.nome : x, link = pad ? linkPadrinho(x) : linkConvidado(x);
+    const texto = pad ? `${nome}, a gente tem um pedido especial pra te fazer 💍\nAbre aqui: ${link}` : `${nome}, você está convidado para o nosso casamento! 💍\nAbra o convite: ${link}`;
+    return `<div class="item"><span>${esc(nome)}${pad ? " · " + (x.m ? "madrinha" : "padrinho") : ""}</span>
+      <button type="button" data-cp="${i}">Copiar</button><a href="${zap(texto)}" target="_blank" rel="noopener">WhatsApp</a></div>`;
+  }).join("");
+  document.querySelectorAll("[data-cp]").forEach(b => b.onclick = () => { const x = l[b.dataset.cp]; copiar(pad ? linkPadrinho(x) : linkConvidado(x)); });
+}
+document.querySelectorAll("[data-painel]").forEach(b => b.onclick = () => abrirGerador(b.dataset.painel));
+if (new URLSearchParams(location.search).get("novo") === "1") $("#novo").hidden = false;
+
 $("#filtros").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; filtro = b.dataset.f; document.querySelectorAll("#filtros button").forEach(x => x.classList.toggle("on", x === b)); pintar(); };
 $("#busca").oninput = pintar;
 $("#atualizar").onclick = carregar;
-$("#copiar").onclick = async () => { try { await navigator.clipboard.writeText($("#link").value); toast("Link copiado"); } catch (_) { $("#link").select(); } };
+$("#copiar").onclick = () => copiar($("#link").value);
 $("#baixar").onclick = () => {
   const linhas = [["Nome", "Tipo", "Vai", "Pessoas", "Recado", "Respondeu em"]].concat(
     todos.map(r => [r.nome, r.tipo || "convidado", r.vai ? "Sim" : "Não", r.pessoas, r.recado || "", new Date(r.criado_em).toLocaleString("pt-BR")]));

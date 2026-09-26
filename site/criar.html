@@ -589,7 +589,7 @@ function irPara(i) {
   $("#n-passo").textContent = atual + 1;
   $("#barra").style.width = ((atual + 1) / PASSOS.length * 100) + "%";
   $("#voltar").style.visibility = atual === 0 ? "hidden" : "visible";
-  $("#seguir").textContent = atual === PASSOS.length - 1 ? "Publicar convite" : "Continuar";
+  $("#seguir").textContent = atual === PASSOS.length - 1 ? (S.publicado && !S.simulado ? "Salvar alterações" : "Publicar convite") : "Continuar";
   window.scrollTo({ top: 0 });
   if (nome === "link") sugerirSlug();
 }
@@ -829,6 +829,7 @@ async function publicar() {
     const { fotos, publicado, simulado, voz, ...editor } = S;
     const r = await API.publicar(paraConvite(), S.fotos.filter(Boolean), editor, S.som === "voz" ? S.voz : null);
     S.publicado = r.url; S.simulado = !!r.simulado; salvarRascunho();
+    if (!S.simulado) { location.href = "/painel?novo=1"; return; }
     mostrarPronto(); irPara(PASSOS.length);
   } catch (e) {
     console.error(e);
@@ -1052,6 +1053,10 @@ function toast(t) { const el = $("#toast"); el.textContent = t; el.classList.add
     S.simulado = false;
     if (cv.slug && !S.slug) S.slug = cv.slug;
     S.recursos = { padrinhos: !!(cv.recursos && cv.recursos.padrinhos), pix: !!(cv.recursos && cv.recursos.pix) };
+    const querEditar = new URLSearchParams(location.search).has("editar");
+    if (cv.publicado && cv.slug && !querEditar) { location.replace("/painel"); return; }
+    // editando: as listas de links moram no convite (o painel mexe nelas)
+    if (cv.dados && cv.dados.editor) { S.convidados = cv.dados.editor.convidados || S.convidados; S.padrinhosLista = cv.dados.editor.padrinhosLista || S.padrinhosLista; }
   }
   ["nome1","nome2","data","hora","intro","mensagem","evitar","rsvp-ate","slug"].forEach(id => {
     const v = { nome1: S.nome1, nome2: S.nome2, data: S.data, hora: S.hora, intro: S.intro, mensagem: S.mensagem, evitar: S.traje.evitar, "rsvp-ate": S.rsvp_ate, slug: S.slug }[id];
@@ -1064,7 +1069,7 @@ function toast(t) { const el = $("#toast"); el.textContent = t; el.classList.add
   pilulas("som-tipo", () => S.som, v => S.som = v, pintarVozArea);
   pilulas("rec-tipo", () => S.recTipo, v => S.recTipo = v, () => { $("#rec-campos").hidden = S.recTipo !== "outro"; $("#rec-hora-c").hidden = S.recTipo === "nao"; });
   pilulas("traje-tipo", () => S.traje.texto, v => S.traje.texto = v);
-  if (S.publicado) { mostrarPronto(); irPara(PASSOS.length); } else irPara(0);
+  if (S.publicado && S.simulado) { mostrarPronto(); irPara(PASSOS.length); } else irPara(0);
   atualizarPrevia();
 })();
 </script>

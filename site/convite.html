@@ -206,6 +206,9 @@ main { position: relative; z-index: 2; }
 [data-modelo="moderno"] .nomes { font-size: clamp(46px, 14vw, 84px); letter-spacing: .01em; line-height: 1; }
 .nomes .e { display: block; font-style: italic; font-size: .5em; line-height: 1.3; }
 .ch { display: inline-block; will-change: transform; }
+/* a palavra nunca parte no meio ("EVANDR / O"): quebra só entre palavras,
+   e o tamanho diminui sozinho se uma palavra não couber (ajustarNomes) */
+.palavra { display: inline-block; white-space: nowrap; }
 
 .quando { margin-top: 28px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .quando .data { font-family: var(--display); font-size: 30px; letter-spacing: .06em; }
@@ -459,7 +462,17 @@ const CAL = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-w
 const iniciais = (c) => `${esc((c.nome1 || "A")[0])}&${esc((c.nome2 || "P")[0])}`;
 const linkMapa = (end) => { const q = encodeURIComponent(end); return iOS ? `https://maps.apple.com/?q=${q}` : `https://www.google.com/maps/search/?api=1&query=${q}`; };
 const dataBR = (iso) => { const [, m, d] = iso.split("-"); return `${d}/${m}`; };
-const letras = (t) => [...String(t)].map(ch => ch === " " ? " " : `<span class="ch">${esc(ch)}</span>`).join("");
+const letras = (t) => String(t).trim().split(/\s+/).map(w => `<span class="palavra">${[...w].map(ch => `<span class="ch">${esc(ch)}</span>`).join("")}</span>`).join(" ");
+function ajustarNomes() {
+  const h = document.querySelector(".nomes");
+  if (!h) return;
+  h.style.fontSize = "";
+  let tam = parseFloat(getComputedStyle(h).fontSize);
+  const larg = h.clientWidth;
+  const grande = () => [...h.querySelectorAll(".palavra")].some(p => p.getBoundingClientRect().width > larg);
+  while (grande() && tam > 26) { tam -= 2; h.style.fontSize = tam + "px"; }
+}
+addEventListener("resize", ajustarNomes);
 const palavras = (t) => String(t).split(/\s+/).map(w => `<span class="w">${esc(w)}</span>`).join(" ");
 const mascara = (html) => `<span class="linha-mask"><span>${html}</span></span>`;
 
@@ -583,6 +596,8 @@ function montar(c) {
   if (modoPadrinho) { const cf = $("#confirmar"); if (cf) cf.remove(); ligarPadrinho(); }
   else formRSVP();
   ligarPresentes();
+  ajustarNomes();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(ajustarNomes);
   $("#agenda").onclick = salvarAgenda;
   contagem();
   clearInterval(timerContagem);
