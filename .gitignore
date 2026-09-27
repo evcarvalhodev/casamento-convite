@@ -5,3 +5,6 @@ node_modules/
 supabase/.temp/
 supabase/.branches/
 *.log
+criativos/*.mp4
+criativos/*.wav
+criativos/*.png

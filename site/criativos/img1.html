@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Criativos em imagem · Pode Abrir</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Duas artes 1080×1350 (feed 4:5). ?arte=a ou ?arte=b mostra só uma, no tamanho real, pra exportar. */
+:root {
+  --bg: #f4eee5; --bg2: #eadfcd; --ink: #1f1a14; --soft: #6f6456; --faint: #9c8f7e;
+  --gold: #9a7a46; --gold2: #c9a462; --ok: #1f8a4c; --ok-bg: #e2f1e7; --no: #9b3b2f; --no-bg: #f5e3df;
+  --ouro: linear-gradient(100deg, #8a6a3a 0%, #b8955c 30%, #d9bf86 50%, #9a7a46 75%, #8a6a3a 100%);
+  --display: "Instrument Serif", Georgia, serif; --sans: "Manrope", system-ui, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #2a2622; font-family: var(--sans); color: var(--ink); display: flex; flex-wrap: wrap; gap: 40px; padding: 40px; justify-content: center; }
+body.uma { padding: 0; gap: 0; background: var(--bg); }
+.arte { position: relative; width: 1080px; height: 1350px; overflow: hidden; flex: none;
+  background: radial-gradient(110% 70% at 50% 10%, #fbf6ee 0%, var(--bg) 55%, var(--bg2) 100%); }
+.grao { position: absolute; inset: 0; opacity: .55; pointer-events: none; mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .42 0 0 0 0 .3 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E"); }
+.dourado { background: var(--ouro); -webkit-background-clip: text; background-clip: text; color: transparent; font-style: italic; padding-right: .05em; }
+.pilula { display: inline-flex; align-items: center; gap: 12px; padding: 12px 24px; border-radius: 999px; background: rgba(255,253,249,.9); border: 2px solid #e6d9c3; font-size: 26px; font-weight: 700; }
+.pilula i { width: 11px; height: 11px; border-radius: 50%; background: var(--gold2); }
+
+/* ---------- A: produto ---------- */
+#a .cab { position: absolute; left: 70px; right: 70px; top: 70px; text-align: center; }
+#a h1 { font-family: var(--display); font-weight: 400; font-size: 88px; line-height: .98; letter-spacing: -.01em; margin-top: 26px; }
+#a .cel { position: absolute; left: 110px; top: 400px; width: 440px; height: 900px; border-radius: 66px; padding: 14px; background: #15110d;
+  box-shadow: 0 60px 110px -45px rgba(60, 40, 15, .75), inset 0 0 0 2px #2d2620, 0 0 0 8px rgba(255,255,255,.4); transform: rotate(-4deg); }
+#a .cel::before { content: ""; position: absolute; top: 28px; left: 50%; width: 120px; height: 34px; margin-left: -60px; border-radius: 20px; background: #15110d; z-index: 3; }
+#a .cel img { width: 100%; height: 100%; object-fit: cover; object-position: top; border-radius: 53px; display: block; }
+#a .painel { position: absolute; right: 70px; top: 520px; width: 460px; background: #fffdf9; border: 2px solid #ece3d4; border-radius: 34px; padding: 28px;
+  box-shadow: 0 40px 80px -35px rgba(60, 40, 15, .55); }
+#a .painel .rot { font-size: 18px; letter-spacing: .14em; text-transform: uppercase; font-weight: 800; color: var(--soft); display: flex; justify-content: space-between; align-items: center; }
+#a .painel .rot span { color: var(--ok); background: var(--ok-bg); border-radius: 99px; padding: 5px 12px; letter-spacing: .04em; text-transform: none; font-size: 17px; }
+#a .nums { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 18px; text-align: center; }
+#a .nums div { background: var(--bg); border-radius: 18px; padding: 16px 6px; }
+#a .nums b { display: block; font-family: var(--display); font-weight: 400; font-size: 58px; line-height: 1; }
+#a .nums small { font-size: 16px; font-weight: 800; color: var(--soft); }
+#a .resp { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-bottom: 1.5px solid #efe6d8; font-size: 20px; }
+#a .resp:last-child { border-bottom: 0; padding-bottom: 0; }
+#a .resp .av { width: 46px; height: 46px; border-radius: 50%; background: #f1e6d2; color: var(--gold); display: grid; place-items: center; font-weight: 800; flex: none; }
+#a .resp b { flex: 1; }
+#a .tag { font-size: 16px; font-weight: 800; padding: 6px 12px; border-radius: 99px; }
+#a .tag.sim { background: var(--ok-bg); color: var(--ok); }
+#a .tag.nao { background: var(--no-bg); color: var(--no); }
+#a .voz { position: absolute; left: 70px; top: 890px; display: flex; align-items: center; gap: 14px; padding: 12px 22px 12px 12px; border-radius: 999px;
+  background: #fffdf9; border: 2px solid #ece3d4; box-shadow: 0 24px 50px -24px rgba(40, 28, 12, .6); }
+#a .voz .m { width: 58px; height: 58px; border-radius: 50%; background: var(--gold); color: #fff; display: grid; place-items: center; font-family: var(--display); font-style: italic; font-size: 24px; }
+#a .voz b { font-size: 20px; display: block; line-height: 1.2; }
+#a .voz small { font-size: 17px; color: var(--soft); font-weight: 600; }
+#a .voz .ondas { display: flex; gap: 4px; align-items: center; margin-left: 6px; }
+#a .voz .ondas i { width: 5px; border-radius: 3px; background: var(--gold); }
+#a .preco { position: absolute; right: 70px; bottom: 90px; width: 460px; text-align: center; }
+#a .preco .valor { font-family: var(--display); font-size: 150px; line-height: .85; }
+#a .preco .valor sup { font-size: 48px; vertical-align: 72px; color: var(--soft); margin-right: 4px; }
+#a .preco p { font-size: 24px; font-weight: 700; color: var(--soft); margin-top: 10px; }
+#a .btn { display: inline-block; margin-top: 22px; padding: 22px 44px; border-radius: 999px; font-size: 28px; font-weight: 800; color: #fff;
+  background: linear-gradient(135deg, #22b455, #15803d); box-shadow: 0 20px 40px -16px rgba(21, 128, 61, .7); }
+
+/* ---------- B: comparação ---------- */
+#b .cab { position: absolute; left: 70px; right: 70px; top: 80px; text-align: center; }
+#b h1 { font-family: var(--display); font-weight: 400; font-size: 92px; line-height: .98; letter-spacing: -.01em; margin-top: 26px; }
+#b .lados { position: absolute; left: 60px; right: 60px; top: 420px; display: grid; grid-template-columns: 1fr 1fr; gap: 26px; }
+#b .lado { border-radius: 36px; padding: 36px 32px 40px; min-height: 600px; display: flex; flex-direction: column; }
+#b .ruim { background: #efe8de; border: 2px solid #e2d8c9; color: #6b6154; }
+#b .bom { background: #fffdf9; border: 3px solid var(--gold2); box-shadow: 0 40px 80px -40px rgba(90, 64, 20, .55); position: relative; }
+#b .selo-bom { position: absolute; top: -22px; left: 50%; transform: translateX(-50%); white-space: nowrap; background: var(--ink); color: #f3dca4; font-size: 20px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; padding: 10px 22px; border-radius: 999px; }
+#b .lado h2 { font-family: var(--display); font-weight: 400; font-size: 52px; line-height: 1; }
+#b .ruim h2 { color: #7b6f60; }
+#b .valor { font-family: var(--display); font-size: 104px; line-height: .9; margin-top: 18px; }
+#b .ruim .valor { color: var(--no); }
+#b .de { font-size: 24px; font-weight: 700; margin-top: 18px; }
+#b .ruim .de + .valor { margin-top: 0; }
+#b .ruim .valor small, #b .bom .valor small { font-size: 34px; }
+#b ul { list-style: none; margin-top: 30px; display: grid; gap: 20px; font-size: 25px; font-weight: 600; line-height: 1.3; }
+#b li { display: grid; grid-template-columns: 36px 1fr; gap: 12px; align-items: start; }
+#b li::before { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-size: 19px; font-weight: 800; }
+#b .ruim li::before { content: "✕"; background: var(--no-bg); color: var(--no); }
+#b .bom li::before { content: "✓"; background: var(--ok-bg); color: var(--ok); }
+#b .rodape { position: absolute; left: 0; right: 0; bottom: 70px; text-align: center; }
+#b .btn { display: inline-block; padding: 26px 56px; border-radius: 999px; font-size: 32px; font-weight: 800; color: #fff;
+  background: linear-gradient(135deg, #22b455, #15803d); box-shadow: 0 20px 40px -16px rgba(21, 128, 61, .7); }
+#b .rodape p { margin-top: 16px; font-size: 22px; font-weight: 700; color: var(--soft); }
+</style>
+</head>
+<body>
+
+<!-- A: produto -->
+<section class="arte" id="a">
+  <div class="grao"></div>
+  <div class="cab">
+    <span class="pilula"><i></i>Convite digital de casamento · você monta em 10 min</span>
+    <h1>Noiva, seu convite<br>pode ser <span class="dourado">assim</span></h1>
+  </div>
+  <div class="cel"><img src="/criativos/tela-capa.png" alt=""></div>
+  <div class="painel">
+    <p class="rot">Quem vem <span>● ao vivo</span></p>
+    <div class="nums"><div><b>84</b><small>vão</small></div><div><b>131</b><small>pessoas</small></div><div><b>9</b><small>não vão</small></div></div>
+    <div style="margin-top:12px">
+      <div class="resp"><span class="av">M</span><b>Tia Marta</b><span class="tag sim">3 pessoas</span></div>
+      <div class="resp"><span class="av">R</span><b>Rafael</b><span class="tag sim">2 pessoas</span></div>
+      <div class="resp"><span class="av">L</span><b>Luciana</b><span class="tag nao">Não vai</span></div>
+    </div>
+  </div>
+  <div class="voz"><span class="m">A&amp;P</span><div><b>Com a voz de vocês</b><small>toca quando o envelope abre</small></div>
+    <span class="ondas"><i style="height:14px"></i><i style="height:30px"></i><i style="height:20px"></i><i style="height:36px"></i><i style="height:16px"></i><i style="height:26px"></i></span></div>
+  <div class="preco">
+    <div class="valor"><sup>R$</sup>67</div>
+    <p>pagamento único · Pix ou cartão</p>
+    <span class="btn">Monte o seu hoje</span>
+  </div>
+</section>
+
+<!-- B: comparação -->
+<section class="arte" id="b">
+  <div class="grao"></div>
+  <div class="cab">
+    <span class="pilula"><i></i>Convite digital de casamento</span>
+    <h1>O convite impresso<br>não te conta <span class="dourado">quem vem</span></h1>
+  </div>
+  <div class="lados">
+    <div class="lado ruim">
+      <h2>Convite impresso</h2>
+      <p class="de">a partir de</p><div class="valor">R$1.500</div>
+      <ul>
+        <li>Semanas de gráfica e entrega</li>
+        <li>Você cobra a resposta de um por um</li>
+        <li>Planilha que nunca bate</li>
+        <li>Mudou o horário? Imprime de novo</li>
+      </ul>
+    </div>
+    <div class="lado bom">
+      <span class="selo-bom">Pode Abrir</span>
+      <h2>Convite que abre como envelope</h2>
+      <p class="de">pagamento único</p><div class="valor" style="margin-top:0">R$67</div>
+      <ul>
+        <li>Pronto em 10 minutos, no WhatsApp</li>
+        <li>Toca a voz de vocês ao abrir</li>
+        <li>Quem vem cai no seu celular</li>
+        <li>Edita quando quiser, mesmo link</li>
+      </ul>
+    </div>
+  </div>
+  <div class="rodape">
+    <span class="btn">Quero o meu por R$67</span>
+    <p>pagamento único · garantia de 7 dias</p>
+  </div>
+</section>
+
+<script>
+const q = new URLSearchParams(location.search).get("arte");
+if (q) { document.body.classList.add("uma"); document.querySelectorAll(".arte").forEach(a => a.hidden = a.id !== q); }
+</script>
+</body>
+</html>
