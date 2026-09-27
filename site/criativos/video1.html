@@ -238,19 +238,33 @@ em(0, (S, t) => Som.musica(S, t, [
   [Som.C.Am7, 1.6], [Som.C.Fmaj7, 2], [Som.C.Cadd9, 4.2],
 ], 2.85, DURACAO));
 em(.05, (S, t) => Som.whoosh(S, t, .9, .3, 250, 1800));
-em(2.7, (S, t) => Som.toque(S, t));
-em(2.84, (S, t) => { Som.baque(S, t, .55); Som.papel(S, t + .02, .5, .2); });
-em(2.9, (S, t) => Som.brilhos(S, t, 16, .07, .045));
-em(5.05, (S, t) => Som.whoosh(S, t, .45, .22, 600, 3000));
-em(5.2, (S, t) => Som.pop(S, t, 520, .2));
+em(1.1, (S, t) => Som.bolha(S, t, 380, .22, -.2));                  // celular pousa
+[.35, .45].forEach((t, i) => em(t, (S, tt) => Som.clique(S, tt, .18, i ? .3 : -.3))); // linhas do texto
+em(2.68, (S, t) => Som.clique(S, t, .55));                           // dedo toca
+em(2.84, (S, t) => Som.subida(S, t, .5, .16));
+em(2.84, (S, t) => { Som.lacre(S, t); Som.amassar(S, t + .03, .5, .3); });
+em(2.9, (S, t) => Som.brilhos(S, t, 18, .07, .04));
+[2.9, 3.0].forEach((t, i) => em(t, (S, tt) => Som.clique(S, tt, .15, i ? .4 : -.4)));
+em(5.05, (S, t) => Som.whoosh(S, t, .45, .2, 600, 3000));
+em(5.2, (S, t) => Som.bolha(S, t, 460, .3));                         // player da voz
+[5.1, 5.2].forEach((t, i) => em(t, (S, tt) => Som.clique(S, tt, .15, i ? .3 : -.3)));
 em(7.95, (S, t) => Som.whoosh(S, t, .6, .2, 400, 2400));
-em(10.95, (S, t) => Som.whoosh(S, t, .7, .3, 300, 2200));
+[8.0, 8.1].forEach((t, i) => em(t, (S, tt) => Som.clique(S, tt, .15, i ? .3 : -.3)));
+em(11.0, (S, t) => Som.subida(S, t, .7, .2));
+em(11.0, (S, t) => Som.impacto(S, t, .5));                           // painel entra
 em(11.3, (S, t) => Som.notificacao(S, t));
-for (let i = 0, t = 11.6; t < 13.3; i++, t += .045 + i * .004) em(t, (S, tt) => Som.tique(S, tt, .03));
-[520, 620, 740, 880].forEach((f, i) => em(12.0 + i * .35, (S, t) => Som.pop(S, t, f, .18)));
-em(15.35, (S, t) => Som.whoosh(S, t, .6, .3, 300, 2600));
+em(11.32, (S, t) => Som.bolha(S, t, 520, .22, .2));
+// números correndo: tiques que sobem de nota (escala maior) e desaceleram
+{ const escala = [523, 587, 659, 698, 784, 880, 988, 1047]; let t = 11.6;
+  for (let i = 0; t < 13.25; i++) { const f = escala[i % 8] * (i >= 8 ? 2 : 1); em(t, (S, tt) => Som.tiqueNota(S, tt, f, .07)); t += .06 + i * .006; } }
+em(13.3, (S, t) => Som.sino(S, t, 2093, .08));
+[440, 523, 659, 784].forEach((f, i) => em(12.0 + i * .35, (S, t) => Som.bolha(S, t, f, .26, [-.3, .3, -.15, .15][i])));
+em(15.5, (S, t) => Som.subida(S, t, .9, .22));
+em(15.5, (S, t) => Som.impacto(S, t, .75));                          // cartão final
 em(15.6, (S, t) => Som.brilhos(S, t, 22, .06, .05));
+em(15.9, (S, t) => Som.bolha(S, t, 392, .3));                        // preço pula
 em(16.2, (S, t) => Som.sino(S, t, 1046.5, .1));
+[16.8, 17.8].forEach(t => em(t, (S, tt) => Som.clique(S, tt, .2)));   // botão pulsa
 em(16.75, (S, t) => Som.brilhos(S, t, 8, .05, .06));
 window.TRILHA = T; window.DURACAO = DURACAO;
 
