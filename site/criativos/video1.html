@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Criativo 1 · Pode Abrir</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Criativo 1 (produto funcionando), 9:16. O palco tem 1080×1920 e é escalado
+   pra caber na janela; na exportação a janela tem exatamente 1080×1920. */
+:root {
+  --bg: #f4eee5; --bg2: #eadfcd; --ink: #1f1a14; --soft: #6f6456;
+  --gold: #9a7a46; --gold2: #c9a462; --ok: #1f8a4c; --ok-bg: #e2f1e7; --no: #9b3b2f; --no-bg: #f5e3df;
+  --ouro: linear-gradient(100deg, #8a6a3a 0%, #c9a462 22%, #f4e3b9 36%, #a8864f 50%, #d9bf86 68%, #8a6a3a 84%, #c9a462 100%);
+  --display: "Instrument Serif", Georgia, serif; --sans: "Manrope", system-ui, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; background: #0d0c0b; overflow: hidden; }
+#palco {
+  position: absolute; left: 50%; top: 50%; width: 1080px; height: 1920px; overflow: hidden;
+  transform-origin: 0 0; font-family: var(--sans); color: var(--ink);
+  background: radial-gradient(120% 70% at 50% 18%, #fbf6ee 0%, var(--bg) 55%, var(--bg2) 100%);
+}
+#luzes { position: absolute; inset: 0; width: 1080px; height: 1920px; pointer-events: none; }
+.grao { position: absolute; inset: 0; opacity: .5; pointer-events: none; mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .42 0 0 0 0 .3 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E"); }
+/* faixa de luz que atravessa o palco nas trocas de cena */
+.varredura { position: absolute; top: -20%; left: -60%; width: 50%; height: 140%; pointer-events: none; z-index: 30; opacity: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 246, 226, .75), transparent); transform: rotate(14deg); }
+.clarao { position: absolute; inset: 0; pointer-events: none; z-index: 29; opacity: 0;
+  background: radial-gradient(40% 25% at 50% 52%, rgba(255, 244, 214, .95), rgba(255, 244, 214, 0) 70%); }
+
+/* texto de cima (troca a cada cena) */
+.topo { position: absolute; left: 60px; right: 60px; top: 110px; height: 310px; text-align: center; z-index: 12; }
+.frase { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; opacity: 0; }
+.frase b { font-family: var(--display); font-weight: 400; font-size: 108px; line-height: .98; letter-spacing: -.01em; display: block; }
+.frase b em, .final h2 em {
+  background: var(--ouro); background-size: 250% 100%; -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: ouro 3.5s linear infinite; padding-right: .06em;
+}
+@keyframes ouro { to { background-position: -250% 0; } }
+.frase small { font-size: 36px; font-weight: 700; color: var(--soft); letter-spacing: .01em; }
+.linha { display: block; overflow: hidden; padding: 4px 10px 10px; }
+.linha > span { display: inline-block; }
+.estrela { font-style: normal; color: var(--gold2); font-size: .62em; vertical-align: .2em; display: inline-block; }
+
+/* câmera > flutuação > celular */
+#camera { position: absolute; inset: 0; transform-origin: 50% 24%; z-index: 10; }
+#flutua { position: absolute; inset: 0; }
+.cel {
+  position: absolute; left: 50%; top: 450px; width: 620px; height: 1318px; margin-left: -310px;
+  border-radius: 92px; padding: 20px; background: #15110d;
+  box-shadow: 0 80px 140px -60px rgba(60, 40, 15, .7), inset 0 0 0 3px #2d2620, 0 0 0 10px rgba(255,255,255,.35);
+}
+.cel::before { content: ""; position: absolute; top: 40px; left: 50%; width: 180px; height: 50px; margin-left: -90px; border-radius: 30px; background: #15110d; z-index: 7; }
+/* reflexo no vidro */
+.cel::after { content: ""; position: absolute; inset: 20px; border-radius: 74px; z-index: 7; pointer-events: none;
+  background: linear-gradient(125deg, rgba(255,255,255,.16) 0%, rgba(255,255,255,0) 28%); }
+.tela { position: relative; width: 580px; height: 1278px; border-radius: 74px; overflow: hidden; clip-path: inset(0 round 74px); isolation: isolate; background: #f3eee6; }
+.tela iframe { position: absolute; left: 0; top: 0; width: 390px; height: 859px; border: 0; transform: scale(1.4872); transform-origin: 0 0; }
+
+/* dedo tocando */
+.toque { position: absolute; width: 120px; height: 120px; border-radius: 50%; left: 50%; top: 50%; margin: -60px 0 0 -60px;
+  background: rgba(255,255,255,.55); border: 4px solid rgba(255,255,255,.95); box-shadow: 0 10px 30px rgba(0,0,0,.25); opacity: 0; z-index: 8; }
+.onda { position: absolute; width: 120px; height: 120px; border-radius: 50%; left: 50%; top: 50%; margin: -60px 0 0 -60px;
+  border: 4px solid rgba(255,255,255,.9); opacity: 0; z-index: 8; }
+
+/* voz dos noivos */
+.voz { position: absolute; left: 50%; top: 1560px; width: 720px; margin-left: -360px; z-index: 14; opacity: 0;
+  display: flex; align-items: center; gap: 22px; padding: 18px 30px 18px 18px; border-radius: 999px;
+  background: rgba(255, 253, 249, .97); box-shadow: 0 30px 60px -25px rgba(40, 28, 12, .55); border: 2px solid #eadfcd; }
+.voz .mono { position: relative; width: 92px; height: 92px; border-radius: 50%; background: var(--gold); color: #fff; display: grid; place-items: center; font-family: var(--display); font-style: italic; font-size: 38px; flex: none; }
+.voz .mono::after { content: ""; position: absolute; inset: -8px; border-radius: 50%; border: 3px solid var(--gold2); opacity: 0; animation: pulso-voz 1.2s ease-out infinite; }
+@keyframes pulso-voz { 0% { transform: scale(.9); opacity: .8; } 100% { transform: scale(1.35); opacity: 0; } }
+.voz .txt { flex: 1; line-height: 1.2; }
+.voz .txt b { display: block; font-size: 34px; }
+.voz .txt span { font-size: 26px; color: var(--soft); font-weight: 600; }
+.voz .ondas { display: flex; gap: 7px; align-items: center; height: 60px; }
+.voz .ondas i { width: 8px; height: 12px; border-radius: 4px; background: var(--gold); }
+
+/* painel dentro do celular */
+.painel { position: absolute; inset: 0; background: #f6f1e9; z-index: 6; padding: 130px 38px 40px; }
+.painel .cab { display: flex; align-items: baseline; justify-content: space-between; }
+.painel h3 { font-family: var(--display); font-weight: 400; font-size: 66px; }
+.painel .ao-vivo { font-size: 22px; font-weight: 800; color: var(--ok); background: var(--ok-bg); padding: 8px 16px; border-radius: 99px; }
+.painel .ao-vivo::before { content: "● "; }
+.totais { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 30px; }
+.totais div { background: #fffdf9; border: 2px solid #ece3d4; border-radius: 26px; padding: 26px 10px; text-align: center; }
+.totais b { display: block; font-family: var(--display); font-weight: 400; font-size: 84px; line-height: 1; font-variant-numeric: tabular-nums; }
+.totais span { font-size: 22px; font-weight: 800; color: var(--soft); }
+.lista { margin-top: 26px; display: grid; gap: 14px; }
+.resp { display: flex; align-items: center; gap: 18px; background: #fffdf9; border: 2px solid #ece3d4; border-radius: 26px; padding: 20px; opacity: 0; }
+.resp .av { width: 70px; height: 70px; border-radius: 50%; background: #f1e6d2; color: var(--gold); display: grid; place-items: center; font-weight: 800; font-size: 30px; flex: none; }
+.resp .meio { flex: 1; min-width: 0; line-height: 1.25; }
+.resp .meio b { font-size: 30px; display: block; }
+.resp .meio small { font-size: 22px; color: var(--soft); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tag { font-size: 22px; font-weight: 800; padding: 10px 16px; border-radius: 99px; white-space: nowrap; }
+.tag.sim { background: var(--ok-bg); color: var(--ok); }
+.tag.nao { background: var(--no-bg); color: var(--no); }
+
+/* notificação que cai no topo do celular */
+.notif { position: absolute; left: 50%; top: 470px; width: 640px; margin-left: -320px; z-index: 15; opacity: 0;
+  display: flex; gap: 20px; align-items: center; padding: 24px 28px; border-radius: 40px;
+  background: rgba(250, 247, 242, .97); box-shadow: 0 30px 60px -20px rgba(0,0,0,.35); }
+.notif .ic { width: 76px; height: 76px; border-radius: 20px; background: var(--ink); color: #f3dca4; display: grid; place-items: center; font-family: var(--display); font-size: 40px; font-style: italic; flex: none; }
+.notif b { font-size: 28px; display: block; }
+.notif span { font-size: 26px; color: var(--soft); }
+
+/* cartão final */
+.final { position: absolute; inset: 0; z-index: 20; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 0 80px 180px; opacity: 0;
+  background: radial-gradient(120% 70% at 50% 30%, #fbf6ee 0%, var(--bg) 60%, var(--bg2) 100%); }
+.final .marca { font-family: var(--display); font-size: 60px; }
+.final .marca em { color: var(--gold); }
+.final h2 { font-family: var(--display); font-weight: 400; font-size: 100px; line-height: .98; margin-top: 60px; }
+.final h2 em { display: inline-block; }
+.final .preco { position: relative; margin-top: 64px; display: flex; align-items: baseline; gap: 18px; justify-content: center; padding: 0 20px; }
+.final .preco b { font-family: var(--display); font-weight: 400; font-size: 190px; line-height: .8; display: inline-block; }
+.final .preco b sup { font-size: 60px; vertical-align: 90px; color: var(--soft); margin-right: 6px; }
+.final .preco span { font-size: 34px; font-weight: 700; color: var(--soft); text-align: left; line-height: 1.2; }
+.final .btn { margin-top: 70px; padding: 38px 80px; border-radius: 999px; font-size: 44px; font-weight: 800; color: #fff;
+  background: linear-gradient(135deg, #22b455, #15803d); box-shadow: 0 30px 60px -20px rgba(21, 128, 61, .7); position: relative; overflow: hidden; }
+.final .btn::after { content: ""; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 35%, rgba(255,255,255,.4) 50%, transparent 65%); transform: translateX(-120%); animation: brilho 2.4s ease-in-out infinite; }
+@keyframes brilho { 0%, 45% { transform: translateX(-120%); } 80%, 100% { transform: translateX(120%); } }
+.final .url { margin-top: 34px; font-size: 32px; font-weight: 700; color: var(--soft); }
+
+/* capa: começar com som (o navegador só toca som depois de um clique) */
+#comecar { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; background: rgba(13, 12, 11, .55); cursor: pointer; }
+#comecar span { font: 700 18px system-ui; color: #1f1a14; background: #fff; padding: 16px 28px; border-radius: 99px; box-shadow: 0 10px 30px rgba(0,0,0,.3); }
+#controles { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); display: flex; gap: 8px; z-index: 99; font: 600 14px system-ui; }
+#controles button { font: inherit; padding: 9px 16px; border-radius: 99px; border: 0; background: #fff; cursor: pointer; }
+.exportando #controles, .exportando #comecar { display: none; }
+</style>
+</head>
+<body>
+<div id="palco">
+  <canvas id="luzes" width="1080" height="1920"></canvas>
+  <div class="grao"></div>
+
+  <div class="topo">
+    <div class="frase" id="f1"><b><span class="linha"><span>Seus convidados</span></span><span class="linha"><span>vão abrir <em>assim</em></span></span></b></div>
+    <div class="frase" id="f2"><b><span class="linha"><span>Abre como</span></span><span class="linha"><span><em>envelope</em> <i class="estrela">✦</i></span></span></b></div>
+    <div class="frase" id="f3"><b><span class="linha"><span>Com a <em>voz</em></span></span><span class="linha"><span>dos noivos</span></span></b></div>
+    <div class="frase" id="f4"><b><span class="linha"><span>Local, mapa</span></span><span class="linha"><span>e <em>contagem</em></span></span></b></div>
+    <div class="frase" id="f5"><b><span class="linha"><span>E você sabe</span></span><span class="linha"><span><em>quem vem</em></span></span></b><small>sem perguntar pra ninguém</small></div>
+  </div>
+
+  <div id="camera"><div id="flutua">
+    <div class="cel" id="cel">
+      <div class="tela" id="tela">
+        <iframe id="conv" scrolling="no" title="Convite"></iframe>
+        <div class="painel" id="painel">
+          <div class="cab"><h3>Ana &amp; Pedro</h3><span class="ao-vivo">ao vivo</span></div>
+          <div class="totais">
+            <div><b data-n="84">0</b><span>confirmaram</span></div>
+            <div><b data-n="131">0</b><span>pessoas</span></div>
+            <div><b data-n="9">0</b><span>não vão</span></div>
+          </div>
+          <div class="lista">
+            <div class="resp"><span class="av">M</span><div class="meio"><b>Tia Marta</b><small>"Não perco por nada!"</small></div><span class="tag sim">3 pessoas</span></div>
+            <div class="resp"><span class="av">R</span><div class="meio"><b>Rafael Souza</b><small>Confirmou agora</small></div><span class="tag sim">2 pessoas</span></div>
+            <div class="resp"><span class="av">C</span><div class="meio"><b>Carlos</b><small>Aceitou ser padrinho!</small></div><span class="tag sim">Padrinho</span></div>
+            <div class="resp"><span class="av">L</span><div class="meio"><b>Luciana</b><small>"Vou estar viajando 😢"</small></div><span class="tag nao">Não vai</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="toque" id="toque"></div>
+      <div class="onda" id="onda"></div>
+    </div>
+  </div></div>
+
+  <div class="notif" id="notif"><span class="ic">A</span><div><b>Pode Abrir · agora</b><span>Tia Marta confirmou presença · 3 pessoas</span></div></div>
+
+  <div class="voz" id="voz">
+    <span class="mono">A&amp;P</span>
+    <span class="txt"><b>Ana &amp; Pedro</b><span>"A gente queria muito você lá…"</span></span>
+    <span class="ondas"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+  </div>
+
+  <div class="final" id="final">
+    <p class="marca">Pode <em>Abrir</em></p>
+    <h2>Muito mais que um convite:<br><em>encanta, convida<br>e confirma.</em></h2>
+    <div class="preco"><b><sup>R$</sup>67</b><span>pagamento<br>único</span></div>
+    <div class="btn">Monte o seu hoje</div>
+    <p class="url">podeabrir.goupwin.com</p>
+  </div>
+
+  <div class="clarao" id="clarao"></div>
+  <div class="varredura" id="varredura"></div>
+</div>
+
+<div id="comecar"><span>▶ Assistir com som</span></div>
+<div id="controles"><button id="repetir">↻ Repetir</button></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="/criativos/som.js"></script>
+<script>
+const EXPORTANDO = new URLSearchParams(location.search).has("exportar");
+if (EXPORTANDO) document.body.classList.add("exportando");
+const DURACAO = 19.6;
+const palco = document.getElementById("palco");
+function encaixar() {
+  const k = Math.min(innerWidth / 1080, innerHeight / 1920);
+  palco.style.transform = `translate(${-540 * k}px, ${-960 * k}px) scale(${k})`;
+}
+encaixar(); addEventListener("resize", encaixar);
+
+/* ---------- luzes de fundo (bokeh dourado subindo devagar) ---------- */
+(function luzes() {
+  const cv = document.getElementById("luzes"), x = cv.getContext("2d");
+  const ps = Array.from({ length: 26 }, () => ({
+    x: Math.random() * 1080, y: Math.random() * 1920, r: 18 + Math.random() * 70,
+    v: 10 + Math.random() * 26, a: .12 + Math.random() * .22, f: Math.random() * 6.28, d: Math.random() * 20 - 10,
+  }));
+  let antes = performance.now();
+  (function quadro(agora) {
+    const dt = Math.min((agora - antes) / 1000, .05); antes = agora;
+    x.clearRect(0, 0, 1080, 1920);
+    for (const p of ps) {
+      p.y -= p.v * dt; p.x += Math.sin(agora / 2400 + p.f) * p.d * dt; p.f += dt * .6;
+      if (p.y < -p.r) { p.y = 1920 + p.r; p.x = Math.random() * 1080; }
+      const g = x.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r);
+      const a = p.a * (.7 + .3 * Math.sin(p.f * 2));
+      g.addColorStop(0, `rgba(222, 190, 128, ${a})`); g.addColorStop(.55, `rgba(222, 190, 128, ${a * .35})`); g.addColorStop(1, "rgba(222,190,128,0)");
+      x.fillStyle = g; x.beginPath(); x.arc(p.x, p.y, p.r, 0, 7); x.fill();
+    }
+    requestAnimationFrame(quadro);
+  })(antes);
+})();
+
+/* ---------- trilha: música + efeitos, por tempo ---------- */
+const T = [];
+const em = (t, f) => T.push({ t, f });
+em(0, (S, t) => Som.musica(S, t, [
+  [Som.C.Cmaj7, 3], [Som.C.Am7, 3], [Som.C.Fmaj7, 3], [Som.C.G6, 2.8],
+  [Som.C.Am7, 1.6], [Som.C.Fmaj7, 2], [Som.C.Cadd9, 4.2],
+], 2.85, DURACAO));
+em(.05, (S, t) => Som.whoosh(S, t, .9, .3, 250, 1800));
+em(2.7, (S, t) => Som.toque(S, t));
+em(2.84, (S, t) => { Som.baque(S, t, .55); Som.papel(S, t + .02, .5, .2); });
+em(2.9, (S, t) => Som.brilhos(S, t, 16, .07, .045));
+em(5.05, (S, t) => Som.whoosh(S, t, .45, .22, 600, 3000));
+em(5.2, (S, t) => Som.pop(S, t, 520, .2));
+em(7.95, (S, t) => Som.whoosh(S, t, .6, .2, 400, 2400));
+em(10.95, (S, t) => Som.whoosh(S, t, .7, .3, 300, 2200));
+em(11.3, (S, t) => Som.notificacao(S, t));
+for (let i = 0, t = 11.6; t < 13.3; i++, t += .045 + i * .004) em(t, (S, tt) => Som.tique(S, tt, .03));
+[520, 620, 740, 880].forEach((f, i) => em(12.0 + i * .35, (S, t) => Som.pop(S, t, f, .18)));
+em(15.35, (S, t) => Som.whoosh(S, t, .6, .3, 300, 2600));
+em(15.6, (S, t) => Som.brilhos(S, t, 22, .06, .05));
+em(16.2, (S, t) => Som.sino(S, t, 1046.5, .1));
+em(16.75, (S, t) => Som.brilhos(S, t, 8, .05, .06));
+window.TRILHA = T; window.DURACAO = DURACAO;
+
+/* ---------- vídeo ---------- */
+const conv = document.getElementById("conv");
+// no site (Vercel) o convite é /convite; no servidor local de teste é /convite.html
+conv.src = (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? "/convite.html" : "/convite") + "?para=Tia%20Marta&modelo=classico";
+const cw = () => conv.contentWindow;
+const cd = () => conv.contentDocument;
+const topoDe = (sel) => { const el = cd().querySelector(sel); return el ? el.getBoundingClientRect().top + cw().scrollY : 0; };
+function rolarAte(alvo, dur) {
+  const o = { y: cw().scrollY };
+  return gsap.to(o, { y: alvo, duration: dur, ease: "power2.inOut", onUpdate: () => cw().scrollTo(0, o.y) });
+}
+// frase: cada linha sobe desfocada e ganha foco; sai subindo e desfocando
+function frase(tl, id, t, fica) {
+  const f = "#" + id, linhas = f + " .linha > span";
+  tl.set(f, { opacity: 1, y: 0, filter: "blur(0px)" }, t)
+    .fromTo(linhas, { yPercent: 105, filter: "blur(14px)", opacity: 0 }, { yPercent: 0, filter: "blur(0px)", opacity: 1, duration: .7, ease: "expo.out", stagger: .1 }, t)
+    .fromTo(f + " small", { opacity: 0, y: 24, filter: "blur(8px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: .6 }, t + .35)
+    .to(f, { opacity: 0, y: -40, filter: "blur(10px)", duration: .35, ease: "power2.in" }, t + fica);
+}
+function varredura(tl, t) {
+  tl.fromTo("#varredura", { left: "-60%", opacity: 1 }, { left: "120%", duration: .75, ease: "power2.inOut" }, t)
+    .set("#varredura", { opacity: 0 }, t + .76);
+}
+
+let tl;
+function montar() {
+  if (tl) tl.kill();
+  gsap.set("#painel", { yPercent: 100 });
+  gsap.set([".resp", "#notif", "#voz", "#final", "#toque", "#onda", ".frase", "#clarao"], { opacity: 0 });
+  gsap.set("#camera", { scale: 1, rotation: 0, y: 0 });
+  gsap.set("#cel", { opacity: 1, scale: 1, filter: "blur(0px)" });
+  gsap.set(".totais b", { textContent: 0 });
+  tl = gsap.timeline({ paused: true });
+
+  // flutuação contínua e leve do celular
+  tl.fromTo("#flutua", { y: 0, rotation: 0 }, { y: -14, rotation: .6, duration: 2.4, ease: "sine.inOut", repeat: 7, yoyo: true }, 0);
+
+  // 0 — celular sobe girando de leve
+  tl.fromTo("#cel", { y: 900, rotation: -7, scale: .92 }, { y: 0, rotation: 0, scale: 1, duration: 1.3, ease: "expo.out" }, 0);
+  frase(tl, "f1", .3, 2.2);
+
+  // 1.9 — câmera aproxima do envelope, dedo toca
+  tl.to("#camera", { scale: 1.12, y: 0, duration: 1.1, ease: "power3.inOut" }, 1.9)
+    .fromTo("#toque", { opacity: 0, scale: 1.7 }, { opacity: 1, scale: 1, duration: .35, ease: "power2.out" }, 2.35)
+    .to("#toque", { scale: .78, duration: .1 }, 2.68)
+    .add(() => { const b = cd().querySelector("#abrir"); if (b) b.click(); }, 2.8)
+    .to("#toque", { opacity: 0, scale: 1.4, duration: .35 }, 2.8)
+    .fromTo("#onda", { opacity: .9, scale: .8 }, { opacity: 0, scale: 3.2, duration: .7, ease: "power2.out" }, 2.8)
+    .fromTo("#clarao", { opacity: 0 }, { opacity: .85, duration: .12 }, 2.84)
+    .to("#clarao", { opacity: 0, duration: .9, ease: "power2.out" }, 2.97)
+    .to("#camera", { scale: 1, y: 0, duration: 1.4, ease: "power3.inOut" }, 3.9);
+  frase(tl, "f2", 2.85, 2.1);
+
+  // 5.1 — voz dos noivos (a câmera chega um pouco na foto)
+  frase(tl, "f3", 5.1, 2.7);
+  tl.to("#camera", { scale: 1.06, duration: 2.8, ease: "sine.inOut" }, 5.1)
+    .fromTo("#voz", { opacity: 0, y: 80, scale: .85 }, { opacity: 1, y: 0, scale: 1, duration: .7, ease: "back.out(1.7)" }, 5.15)
+    .fromTo("#voz .ondas i", { height: 12 }, { height: () => 20 + Math.random() * 40, duration: .2, repeat: 12, yoyo: true, ease: "sine.inOut", stagger: { each: .05, from: "random" } }, 5.35)
+    .to("#voz", { opacity: 0, y: 50, scale: .95, duration: .35 }, 7.85);
+
+  // 8 — convite rola: contagem e locais
+  varredura(tl, 7.9);
+  frase(tl, "f4", 8.0, 2.75);
+  tl.to("#camera", { scale: 1, rotation: -1.2, duration: 1.2, ease: "power2.inOut" }, 8.0)
+    .add(() => rolarAte(topoDe("#s-contagem") - 60, 1.3), 8.0)
+    .add(() => rolarAte(topoDe("#s-traje") - 520, 1.3), 9.5)
+    .to("#camera", { rotation: 0, duration: 1, ease: "power2.inOut" }, 10.0);
+
+  // 11 — painel sobe dentro do celular, notificação, números correm
+  varredura(tl, 10.9);
+  frase(tl, "f5", 11.0, 4.25);
+  tl.to("#painel", { yPercent: 0, duration: .85, ease: "expo.inOut" }, 11.0)
+    .fromTo("#notif", { opacity: 0, y: -160, scale: .9 }, { opacity: 1, y: 0, scale: 1, duration: .6, ease: "back.out(1.6)" }, 11.25)
+    .to("#notif", { opacity: 0, y: -90, duration: .4, ease: "power2.in" }, 12.9);
+  document.querySelectorAll(".totais b").forEach((b, i) => {
+    const o = { n: 0 };
+    tl.to(o, { n: +b.dataset.n, duration: 1.7, ease: "power2.out", onUpdate: () => b.textContent = Math.round(o.n) }, 11.6 + i * .1)
+      .fromTo(b.parentNode, { scale: 1 }, { scale: 1.08, duration: .18, yoyo: true, repeat: 1, ease: "power2.out" }, 13.3 + i * .08);
+  });
+  tl.fromTo(".resp", { opacity: 0, x: 90, filter: "blur(6px)" }, { opacity: 1, x: 0, filter: "blur(0px)", duration: .55, ease: "expo.out", stagger: .35 }, 12.0);
+
+  // 15.25 — celular sai desfocando, cartão final
+  tl.to("#cel", { y: -260, scale: .86, opacity: 0, filter: "blur(12px)", duration: .6, ease: "power3.in" }, 15.25)
+    .fromTo("#final", { opacity: 0 }, { opacity: 1, duration: .45 }, 15.5);
+  varredura(tl, 15.45);
+  tl.fromTo("#final .marca, #final h2, #final .preco, #final .btn, #final .url",
+      { opacity: 0, y: 60, filter: "blur(12px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: .8, ease: "expo.out", stagger: .15 }, 15.6)
+    .fromTo("#final .preco b", { scale: .7 }, { scale: 1, duration: .7, ease: "back.out(2)" }, 15.9)
+    .fromTo("#final .btn", { scale: 1 }, { scale: 1.05, duration: .5, yoyo: true, repeat: 3, ease: "sine.inOut" }, 16.8)
+    .to({}, { duration: .1 }, DURACAO - .1);
+  return tl;
+}
+
+// o convite precisa estar carregado (e fechado) antes de começar
+let audioCtx = null, trilhaAtual = null;
+function tocarTrilha() {
+  try {
+    if (trilhaAtual) trilhaAtual.master.disconnect();
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    audioCtx.resume();
+    trilhaAtual = agendarTrilha(audioCtx, T, audioCtx.currentTime + .05);
+  } catch (_) {}
+}
+function recomecar(comSom) {
+  gsap.set("#cel", { opacity: 1, scale: 1, filter: "blur(0px)" });
+  conv.onload = () => setTimeout(() => {
+    montar();
+    window.PRONTO = true;
+    if (EXPORTANDO) return;             // na exportação quem dá o play é o gravador
+    if (comSom) tocarTrilha();
+    tl.play(0);
+  }, 900);
+  conv.src = conv.src.split("&_=")[0] + "&_=" + Date.now();
+}
+window.darPlay = () => tl.play(0);
+document.getElementById("comecar").onclick = (e) => { e.currentTarget.remove(); recomecar(true); };
+document.getElementById("repetir").onclick = () => recomecar(true);
+if (EXPORTANDO) recomecar(false);
+</script>
+</body>
+</html>
