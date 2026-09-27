@@ -348,6 +348,7 @@
     if (!emailOk(email)) return erro("E-mail inválido. Verifique e tente novamente.");
     if (zap && !zapOk(zap)) return erro("WhatsApp inválido. Coloque DDD + número, ex.: (11) 99999-9999.");
     erro("");
+    if (window.pixel) pixel("AddPaymentInfo", { value: total(), currency: "BRL", payment_type: "pix" }, { email });
     const btn = el.querySelector("#ck-pagar-pix");
     estado.processando = true; btn.disabled = true; btn.innerHTML = '<span class="ck-girando"></span>Gerando PIX…';
     estado.email = email;
@@ -371,6 +372,7 @@
     if (zap && !zapOk(zap)) { erro("WhatsApp inválido. Coloque DDD + número."); return; }
     erro("");
     estado.email = email;
+    if (window.pixel) pixel("AddPaymentInfo", { value: total(), currency: "BRL", payment_type: "cartao" }, { email });
     el.querySelector("#ck-brick").hidden = true;
     el.querySelector("#ck-processando").hidden = false;
     try {
@@ -417,24 +419,32 @@
 
   function aprovado() {
     clearInterval(poll);
-    // if (window.fbq) fbq("track", "Purchase", ...) — disparar ANTES de sair da página
+    if (estado.comprado) return;
+    estado.comprado = true;
+    // Compra: valor real (com os bumps), uma vez só. eventID = pedido, pra não
+    // contar em dobro se a mesma compra chegar também pelo servidor.
+    if (window.pixel) pixel("Purchase", {
+      value: Number(total().toFixed(2)), currency: "BRL",
+      content_name: estado.addon || "convite",
+      contents: estado.addon ? [{ id: estado.addon, quantity: 1 }]
+        : [{ id: "convite", quantity: 1 }].concat(estado.itens.padrinhos ? [{ id: "padrinhos", quantity: 1 }] : [], estado.itens.pix ? [{ id: "pix", quantity: 1 }] : []),
+    }, { eventID: estado.pedidoId, email: estado.email });
     if (estado.addon) {
       const $ = (s) => el.querySelector(s);
       $("#ck-form").hidden = true; $("#ck-tela-pix").hidden = true; $("#ck-tela-ok").hidden = false;
       $(".ck-aprovado h3").textContent = ADDONS[estado.addon].nome + " liberado!";
       $(".ck-aprovado p").textContent = "Pronto. Já está destravado no seu convite.";
       $(".ck-aprovado p + p").remove();
-      setTimeout(() => { if (opcoes.aoAprovar) opcoes.aoAprovar(); else location.reload(); }, 1500);
+      setTimeout(() => { if (opcoes.aoAprovar) opcoes.aoAprovar(); else location.reload(); }, 1500); // 1,5s: o pixel sai antes
       return;
     }
     // Igual ao ViralFlow: vai pro /parabens criar a senha e entrar direto.
-    if (estado.email) { location.href = "/parabens?email=" + encodeURIComponent(estado.email); return; }
+    if (estado.email) { setTimeout(() => { location.href = "/parabens?email=" + encodeURIComponent(estado.email); }, 700); return; }
     const $ = (s) => el.querySelector(s);
     $("#ck-ok-email").textContent = estado.email || "informado";
     $("#ck-form").hidden = true; $("#ck-tela-pix").hidden = true; $("#ck-tela-ok").hidden = false;
     $("#ck-p2").className = "feito"; $("#ck-p3").className = "atual";
     el.scrollTo({ top: 0 });
-    // if (window.fbq) fbq("track", "Purchase", { value: total(), currency: "BRL" });
   }
 
   async function abrir(opts) {
@@ -450,8 +460,8 @@
     }
     montarTela();
     pintar();
+    if (window.pixel) pixel("InitiateCheckout", { value: total(), currency: "BRL", content_name: estado.addon || "convite" });
     el.setAttribute("tabindex", "-1"); el.focus({ preventScroll: true });
-    // if (window.fbq) fbq("track", "InitiateCheckout", { value: total(), currency: "BRL" });
   }
   async function fechar() {
     clearInterval(poll);
