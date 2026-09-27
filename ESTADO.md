@@ -8,7 +8,9 @@
 - Preço real no ar desde 26/09 à noite: R$67 / R$27 / R$19,90 (o teste de R$0,50 já saiu).
 - Pixel CONVITE_CASAMENTO (1445645484133103) + API de Conversões (Purchase pelo servidor, token só desse pixel).
 - **Acesso igual ViralFlow:** pagar não cria conta; conta nasce no /parabens (e-mail da compra) ou no ADM. Painel é a tela inicial do casal. App instalável no painel.
-- **Falta:** Resend (e-mail), ID do pixel Meta, e-mail da Vitória como ADM, página de privacidade/termos, foto real de casal na demo, criativo.
+- **E-mail:** Resend da conta evcarvalhodev (a mesma do ViralFlow), domínio `podeabrir.goupwin.com` verificado (TXT resend._domainkey.podeabrir + CNAMEs rsend/send.podeabrir na Hostinger). Chave `pode-abrir` só envio e só desse domínio. Remetente: Pode Abrir <acesso@podeabrir.goupwin.com>.
+- **ADM:** a Vitória usa a mesma conta evcarvalhodev@gmail.com.
+- **Falta:** página de privacidade/termos, foto real de casal na demo, criativo e campanha.
 - **Segurança:** revogar o token do Supabase usado nesta sessão e trocar a senha do ADM (ficaram no chat).
 
 ## O produto
