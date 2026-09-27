@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#f6f1e9">
-<title>Pode Abrir · O convite que te conta quem vai no seu casamento</title>
+<title>Pode Abrir · Muito mais que um convite</title>
 <meta name="description" content="Convite de casamento que abre como envelope, com a voz de vocês, e controle de convidados: quem vem, quantas pessoas e quem não pode, tudo no seu celular. R$67, pagamento único.">
 <meta property="og:title" content="Pode Abrir · O convite que te conta quem vai no seu casamento">
 <meta property="og:description" content="Abre como envelope, toca a voz de vocês e cada resposta cai no seu celular. R$67, pagamento único.">
@@ -62,6 +62,9 @@ section.sec { padding: 88px 0; }
 @media (min-width: 940px) { .hero .wrap { grid-template-columns: 1.05fr .95fr; gap: 56px; } .hero { padding-top: 56px; } }
 .hero h1 { font-size: clamp(44px, 9vw, 76px); margin-top: 14px; }
 .hero .lead { margin-top: 20px; }
+.beneficios { list-style: none; display: grid; gap: 10px; margin-top: 22px; font-size: 17px; font-weight: 600; }
+.beneficios li { display: flex; gap: 10px; align-items: baseline; }
+.beneficios li::before { content: "✓"; color: var(--gold); font-weight: 800; }
 .hero .cta { margin-top: 28px; }
 .selos { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 24px; font-size: 14px; color: var(--soft); font-weight: 600; }
 .selos span::before { content: "✓"; color: var(--gold); margin-right: 6px; font-weight: 800; }
@@ -254,14 +257,17 @@ footer a { color: var(--soft); }
 <section class="hero">
   <div class="wrap">
     <div>
-      <p class="eyebrow">Convite de casamento + controle de convidados</p>
-      <h1>O convite que abre como envelope e <em>te conta quem vai</em> no seu casamento.</h1>
-      <p class="lead">Seus convidados recebem no WhatsApp, tocam no envelope e ouvem a voz de vocês. E cada resposta cai no seu celular: quem vem, quantas pessoas, quem não pode. Sem planilha e sem cobrar ninguém no privado.</p>
+      <p class="eyebrow">Convite digital de casamento</p>
+      <h1>Muito mais que um convite: <em>encanta, convida e confirma.</em></h1>
+      <ul class="beneficios">
+        <li>Abre como envelope, com a voz dos noivos</li>
+        <li>Quem vem e quantas pessoas, direto no seu celular</li>
+        <li>Pronto em 10 minutos, sem instalar nada</li>
+      </ul>
       <div class="cta">
         <a class="btn" href="/checkout" data-checkout>Quero o meu por R$67 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
         <p class="micro">Pagamento único. Pix ou cartão em até 12x. Garantia de 7 dias.</p>
       </div>
-      <div class="selos"><span>Pronto em 10 minutos</span><span>Convidados ilimitados</span><span>Sem app pra instalar</span></div>
     </div>
     <div class="palco">
       <div class="celular"><iframe id="demo" src="/convite?para=Voc%C3%AA" title="Demonstração do convite" loading="eager"></iframe></div>
