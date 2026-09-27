@@ -57,3 +57,8 @@ O casal preenche um formulário, sobe 1-3 fotos, escolhe o modelo e recebe o lin
 5. Pixel da Meta (Purchase no `aprovado()` do checkout — já tem o lugar comentado).
 6. Vídeo de tela do envelope abrindo no iPhone = criativo.
 7. Música no convite (decidir: lista de faixas livres ou upload).
+
+## 27/09/2026 — página v2 no ar
+- Página de vendas reescrita no formato Brunson (convite + controle de convidados, conta do buffet, 3 dúvidas, oferta empilhada, Garantia Pode Abrir, quando mandar). Aprovada por ele na prévia.
+- Demonstração: foto por modelo (`img/demo-casal` clássico, `demo-rustico`, `demo-moderno`) + galeria "Nós dois" (`demo-cafe`, `demo-anel`). Fotos geradas por IA, JPEG q82.
+- Próximo possível: oferta de 1 clique depois da compra (OTO); página de privacidade/termos.
