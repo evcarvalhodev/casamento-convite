@@ -64,3 +64,15 @@ O casal preenche um formulário, sobe 1-3 fotos, escolhe o modelo e recebe o lin
 - Próximo possível: oferta de 1 clique depois da compra (OTO); página de privacidade/termos.
 - 27/09: topo da página = "Muito mais que um convite: encanta, convida e confirma." + 3 ✓; seletor de modelo logo abaixo do celular; botões de compra verdes com brilho.
 - 27/09: abertura do envelope premium (aprovada, "ficou top"): canvas `festa*` no convite.html — selo estoura em brilhos + clarão, pétalas 3D com desfoque de lente, cores por modelo. Confirmação/padrinho usam `petalas(n)` (chuva).
+
+## 27/09/2026 — primeira campanha LIGADA (aguardando veiculação)
+- Conta act_427059763755525 (BM 101176425088497, a do ViralFlow). O conector Meta Ads do Claude está logado em OUTRO perfil (só vê "Conquista Autos"/"Alyson Gustavo") — campanha foi montada pelo navegador dele.
+- Campanha **[27/09] PODE ABRIR - VENDAS CBO**: Vendas, CBO R$25/dia (valor do rascunho dele; recomendei R$45/dia + limite de gasto R$135 — ele não confirmou a mudança), evento Comprar no pixel CONVITE_CASAMENTO 1445645484133103.
+- 3 conjuntos × 3 anúncios (ele pensou 1 criativo/conjunto; recomendei 3×3 e ficou assim):
+  - 01 ABERTO (mulheres 22-45, sugestão Advantage+) · 02 NOIVADO RECENTE ("Noivos recentes (6 meses)") · 03 INTERESSE CASAMENTO (Casamento, Noivado, Vestido de casamento). Em campanha Advantage+ de vendas a segmentação é só SUGESTÃO.
+  - AD01 vídeo narrado (`criativos/pode-abrir-video-narrado.mp4`, comprimido do `lv_0_20260927124248.mp4` dele) · AD02 vídeo só música (`pode-abrir-video1.mp4`) · AD03 imagem C lista (`pode-abrir-img-c.png`).
+  - URL: podeabrir.goupwin.com com UTM meta/pago/pode-abrir-vendas. Desligados: complemento WhatsApp, otimizar destino, aprimoramentos IA, tradução, música no Reels.
+  - Identidade saiu como página "Evandro Desenvolvedor" / @evandro_gestor (sugeri página "Pode Abrir").
+- Método de validação combinado: pontos de parada — R$40 (CTR >1%, clique <R$1,50), R$90 (2-3 InitiateCheckout), R$135 (≥1 venda). Referências de mercado, não da conta.
+- Pendências: página de privacidade/termos (risco de reprovação), OTO pós-compra.
+- Criativos: páginas animadas em `site/criativos/` (video1.html + som.js gerado no navegador, img1.html artes A/B/C); exportar com `criativos/ferramentas/exportar.js` (MP4 quadro a quadro) e `imgs.js`.
