@@ -879,7 +879,7 @@ function abrir() {
   tela.classList.add("aberto");
   if (navigator.vibrate) navigator.vibrate(12);
   tocar();
-  setTimeout(() => petalas(28), 450);
+  festaAbertura();
 
   const revelar = () => {
     tela.classList.add("saiu");
@@ -895,22 +895,212 @@ function abrir() {
     .add(revelar)
     .set("#iris", { clipPath: "circle(0% at 50% 42%)" });
 }
+/* ---------- festa: pétalas e brilhos (canvas) ----------
+   Um canvas só, por cima de tudo, que existe enquanto houver partícula viva.
+   Pétalas: sprite com degradê desenhado uma vez por cor; giram em 3D (achata
+   no eixo X), balançam e têm profundidade — as de perto passam grandes e
+   desfocadas, como numa lente. Brilhos: estrela de 4 pontas com halo, saem do
+   selo na hora que ele quebra. Cores seguem o modelo. */
+const FESTA_CORES = {
+  classico: { petalas: ["#f2c6bf", "#e7a9a1", "#fbeee3", "#e6c79d", "#f5d4cd"], folhas: [], brilho: ["#b8913f", "#c9a24e", "#d9b566"], somar: false },
+  rustico:  { petalas: ["#f6eedd", "#d9bf92", "#d49a7a", "#ecdcc0"], folhas: ["#8f9f6c", "#74855a", "#a9b687"], brilho: ["#a8843c", "#bf9a4e", "#caa862"], somar: false },
+  moderno:  { petalas: ["#fbf8f1", "#efe3c8", "#e3d2ad", "#ffffff"], folhas: [], brilho: ["#cdb07a", "#f1dcaa", "#fff6dd"], somar: true },
+};
+const festa = { cv: null, ctx: null, dpr: 1, ps: [], bs: [], flashes: [], rodando: false, t0: 0, sprites: {} };
+
+function tom(hex, f) {
+  const n = parseInt(hex.slice(1), 16), c = [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  return "rgb(" + c.map(v => Math.round(f < 0 ? v * (1 + f) : v + (255 - v) * f)).join(",") + ")";
+}
+function formaPetala(x, w, h) {
+  x.beginPath();
+  x.moveTo(0, h * 0.5);
+  x.bezierCurveTo(-w * 0.95, h * 0.12, -w * 0.62, -h * 0.58, -w * 0.08, -h * 0.44);
+  x.quadraticCurveTo(0, -h * 0.36, w * 0.08, -h * 0.44);
+  x.bezierCurveTo(w * 0.62, -h * 0.58, w * 0.95, h * 0.12, 0, h * 0.5);
+  x.closePath();
+}
+function formaFolha(x, w, h) {
+  x.beginPath();
+  x.moveTo(0, -h * 0.5);
+  x.quadraticCurveTo(w * 0.62, -h * 0.05, 0, h * 0.5);
+  x.quadraticCurveTo(-w * 0.62, -h * 0.05, 0, -h * 0.5);
+  x.closePath();
+}
+// desenha a pétala/folha nítida, ou só o vulto desfocado (sombra deslocada:
+// funciona no Safari, que não tem ctx.filter)
+function spritePetala(cor, folha, desfoque) {
+  const S = 96, cv = document.createElement("canvas"); cv.width = cv.height = S;
+  const x = cv.getContext("2d"), w = folha ? 26 : 40, h = folha ? 60 : 48;
+  const forma = folha ? formaFolha : formaPetala;
+  x.translate(S / 2, S / 2);
+  if (desfoque) {
+    x.shadowColor = cor; x.shadowBlur = 14; x.shadowOffsetX = 1000;
+    x.translate(-1000, 0); forma(x, w, h); x.fillStyle = "#000"; x.fill();
+    return cv;
+  }
+  forma(x, w, h);
+  const g = x.createLinearGradient(0, h * 0.5, 0, -h * 0.5);
+  g.addColorStop(0, tom(cor, -0.16)); g.addColorStop(0.55, cor); g.addColorStop(1, tom(cor, 0.45));
+  x.fillStyle = g; x.fill();
+  // luz de um lado, pra dar volume
+  const r = x.createRadialGradient(-w * 0.22, -h * 0.12, 1, -w * 0.22, -h * 0.12, w * 0.7);
+  r.addColorStop(0, "rgba(255,255,255,.55)"); r.addColorStop(1, "rgba(255,255,255,0)");
+  x.fillStyle = r; x.fill();
+  // nervura
+  x.strokeStyle = tom(cor, -0.3); x.globalAlpha = 0.22; x.lineWidth = 1;
+  x.beginPath(); x.moveTo(0, h * 0.46); x.quadraticCurveTo(w * 0.06, 0, 0, -h * (folha ? 0.44 : 0.3)); x.stroke();
+  return cv;
+}
+function spriteBrilho(cor, claro) {
+  const S = 64, cv = document.createElement("canvas"); cv.width = cv.height = S;
+  const x = cv.getContext("2d"); x.translate(S / 2, S / 2);
+  const g = x.createRadialGradient(0, 0, 0, 0, 0, S / 2);
+  g.addColorStop(0, "rgba(255,255,255,.95)"); g.addColorStop(0.18, cor); g.addColorStop(1, "rgba(255,255,255,0)");
+  x.globalAlpha = 0.55; x.fillStyle = g; x.beginPath(); x.arc(0, 0, S / 2, 0, 7); x.fill();
+  x.globalAlpha = 1; x.fillStyle = claro ? cor : "#fff";
+  x.beginPath();
+  for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4, r = i % 2 ? 2.2 : 22; x.lineTo(Math.cos(a) * r, Math.sin(a) * r); }
+  x.closePath(); x.fill();
+  if (claro) { x.fillStyle = "#fffaf0"; x.beginPath(); x.arc(0, 0, 2.4, 0, 7); x.fill(); }
+  return cv;
+}
+function festaTema() {
+  const m = (C && C.modelo) || "classico";
+  if (festa.sprites[m]) return festa.sprites[m];
+  const p = FESTA_CORES[m] || FESTA_CORES.classico;
+  const itens = [...p.petalas.map(c => [c, false]), ...p.folhas.map(c => [c, true])];
+  return (festa.sprites[m] = {
+    somar: p.somar,
+    petalas: itens.map(([c, f]) => ({ nitida: spritePetala(c, f, false), borrada: spritePetala(c, f, true), folha: f })),
+    brilhos: p.brilho.map(c => spriteBrilho(c, !p.somar)),
+  });
+}
+function festaCanvas() {
+  if (festa.cv) return;
+  const cv = festa.cv = document.createElement("canvas");
+  cv.setAttribute("aria-hidden", "true");
+  cv.style.cssText = "position:fixed;inset:0;width:100vw;height:100vh;z-index:60;pointer-events:none";
+  document.body.appendChild(cv);
+  festa.ctx = cv.getContext("2d");
+  const medir = () => {
+    festa.dpr = Math.min(window.devicePixelRatio || 1, 2);
+    cv.width = innerWidth * festa.dpr; cv.height = innerHeight * festa.dpr;
+  };
+  medir(); addEventListener("resize", medir);
+}
+const sorte = (a, b) => a + Math.random() * (b - a);
+
+// pétalas: de uma origem (explodem pra cima e caem) ou chovendo do topo
+function soltarPetalas(n, origem, atraso = 0) {
+  const tema = festaTema(), W = innerWidth, H = innerHeight;
+  for (let i = 0; i < n; i++) {
+    const z = Math.random() < 0.12 ? sorte(1.5, 2.3) : sorte(0.45, 1.25); // 12% passam "na frente da lente"
+    const s = tema.petalas[Math.floor(Math.random() * tema.petalas.length)];
+    festa.ps.push({
+      s, z, vivo: -atraso - (origem ? Math.random() * 0.12 : Math.random() * 2.2),
+      x: origem ? origem.x + sorte(-20, 20) : sorte(-0.05, 1.05) * W,
+      y: origem ? origem.y + sorte(-10, 10) : sorte(-0.25, -0.05) * H,
+      vx: origem ? sorte(-1, 1) * 620 * (0.6 + z * 0.4) : 0,
+      vy: origem ? -sorte(750, 1500) * (0.7 + z * 0.3) : sorte(60, 110),
+      rot: sorte(0, 6.28), vrot: sorte(-2.2, 2.2),
+      giro: sorte(0, 6.28), vgiro: sorte(2, 5.5) * (Math.random() < 0.5 ? -1 : 1),
+      fase: sorte(0, 6.28), freq: sorte(0.9, 1.8), amp: sorte(18, 46) * z,
+      tam: (s.folha ? 0.62 : 0.56) * z * (W < 500 ? 0.85 : 1),
+    });
+  }
+  festa.ps.sort((a, b) => a.z - b.z);
+  festaIniciar();
+}
+function soltarBrilhos(n, origem) {
+  const tema = festaTema();
+  for (let i = 0; i < n; i++) {
+    const a = sorte(0, 6.28), v = sorte(160, 760) * (Math.random() < 0.25 ? 0.35 : 1);
+    festa.bs.push({
+      img: tema.brilhos[Math.floor(Math.random() * tema.brilhos.length)],
+      x: origem.x, y: origem.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 120,
+      vida: sorte(0.8, 1.9), idade: -Math.random() * 0.08, tam: sorte(0.18, 0.62),
+      rot: sorte(0, 1.57), pisca: sorte(10, 22),
+    });
+  }
+  festa.flashes.push({ x: origem.x, y: origem.y, idade: 0 });
+  festaIniciar();
+}
+function festaIniciar() {
+  festaCanvas();
+  if (festa.rodando) return;
+  festa.rodando = true; festa.t0 = performance.now();
+  requestAnimationFrame(festaQuadro);
+}
+function festaQuadro(agora) {
+  const dt = Math.min((agora - festa.t0) / 1000, 0.05); festa.t0 = agora;
+  const { ctx, dpr } = festa, W = innerWidth, H = innerHeight, tema = festaTema();
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, W, H);
+
+  // clarão no selo
+  festa.flashes = festa.flashes.filter(f => (f.idade += dt) < 0.7);
+  for (const f of festa.flashes) {
+    const k = f.idade / 0.7, r = 40 + k * 260;
+    const g = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, r);
+    g.addColorStop(0, `rgba(255,244,214,${0.75 * (1 - k)})`); g.addColorStop(1, "rgba(255,244,214,0)");
+    ctx.globalCompositeOperation = tema.somar ? "lighter" : "source-over";
+    ctx.globalAlpha = 1; ctx.fillStyle = g; ctx.fillRect(f.x - r, f.y - r, r * 2, r * 2);
+  }
+
+  // pétalas
+  ctx.globalCompositeOperation = "source-over";
+  festa.ps = festa.ps.filter(p => {
+    p.vivo += dt;
+    if (p.vivo < 0) return true;
+    const arrasto = Math.pow(0.1, dt);                   // perde o impulso da explosão
+    p.vx *= arrasto; p.vy = p.vy * arrasto + (1 - arrasto) * (75 + 60 * p.z); // e cai devagar, como papel
+    p.x += (p.vx + Math.cos(p.vivo * p.freq + p.fase) * p.amp * p.freq) * dt;
+    p.y += p.vy * dt;
+    p.rot += p.vrot * dt; p.giro += p.vgiro * dt;
+    if (p.y > H + 80) return false;
+    const perto = p.z > 1.45, flip = Math.cos(p.giro);
+    ctx.globalAlpha = (perto ? 0.5 : 0.95) * Math.min(1, p.vivo * 4) * (flip < 0 ? 0.82 : 1);
+    ctx.setTransform(dpr, 0, 0, dpr, p.x * dpr, p.y * dpr);
+    ctx.rotate(p.rot);
+    ctx.scale(p.tam * Math.max(0.12, Math.abs(flip)), p.tam);
+    ctx.drawImage(perto ? p.s.borrada : p.s.nitida, -48, -48);
+    return true;
+  });
+
+  // brilhos
+  ctx.globalCompositeOperation = tema.somar ? "lighter" : "source-over";
+  festa.bs = festa.bs.filter(b => {
+    b.idade += dt;
+    if (b.idade < 0) return true;
+    if (b.idade > b.vida) return false;
+    const arrasto = Math.pow(0.04, dt);
+    b.vx *= arrasto; b.vy = b.vy * arrasto + 160 * dt;
+    b.x += b.vx * dt; b.y += b.vy * dt;
+    const k = b.idade / b.vida;
+    ctx.globalAlpha = (1 - k) * (0.65 + 0.35 * Math.sin(b.idade * b.pisca));
+    ctx.setTransform(dpr, 0, 0, dpr, b.x * dpr, b.y * dpr);
+    ctx.rotate(b.rot); ctx.scale(b.tam * (1 - k * 0.5), b.tam * (1 - k * 0.5));
+    ctx.drawImage(b.img, -32, -32);
+    return true;
+  });
+  ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over";
+
+  if (festa.ps.length || festa.bs.length || festa.flashes.length) requestAnimationFrame(festaQuadro);
+  else { festa.rodando = false; ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, festa.cv.width, festa.cv.height); }
+}
+// confirmação de presença e aceite do padrinho: chuva do topo
 function petalas(n) {
   if (semMovimento) return;
-  if (window.innerWidth >= 500) n = Math.round(n * 1.5);
-  for (let i = 0; i < n; i++) {
-    const p = document.createElement("i");
-    p.className = "petala";
-    p.style.left = Math.random() * 100 + "vw";
-    p.style.setProperty("--dx", (Math.random() * 120 - 60) + "px");
-    p.style.setProperty("--rot", (Math.random() * 720 - 360) + "deg");
-    p.style.animationDuration = (2.8 + Math.random() * 2.4) + "s";
-    p.style.animationDelay = (Math.random() * 0.9) + "s";
-    p.style.opacity = 0.45 + Math.random() * 0.45;
-    p.style.scale = String(0.6 + Math.random() * 0.8);
-    document.body.appendChild(p);
-    setTimeout(() => p.remove(), 7000);
-  }
+  soltarPetalas(Math.round(n * (innerWidth >= 500 ? 1.4 : 1)), null);
+}
+// abertura do envelope: o selo quebra em brilhos e as pétalas saem dele
+function festaAbertura() {
+  if (semMovimento) return;
+  const r = $("#selo").getBoundingClientRect();
+  const o = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+  setTimeout(() => soltarBrilhos(innerWidth >= 500 ? 110 : 80, o), 120);
+  setTimeout(() => { soltarPetalas(innerWidth >= 500 ? 34 : 26, o); soltarPetalas(innerWidth >= 500 ? 48 : 36, null, 0.5); }, 380);
 }
 
 /* ---------- música ---------- */
