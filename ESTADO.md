@@ -62,3 +62,5 @@ O casal preenche um formulário, sobe 1-3 fotos, escolhe o modelo e recebe o lin
 - Página de vendas reescrita no formato Brunson (convite + controle de convidados, conta do buffet, 3 dúvidas, oferta empilhada, Garantia Pode Abrir, quando mandar). Aprovada por ele na prévia.
 - Demonstração: foto por modelo (`img/demo-casal` clássico, `demo-rustico`, `demo-moderno`) + galeria "Nós dois" (`demo-cafe`, `demo-anel`). Fotos geradas por IA, JPEG q82.
 - Próximo possível: oferta de 1 clique depois da compra (OTO); página de privacidade/termos.
+- 27/09: topo da página = "Muito mais que um convite: encanta, convida e confirma." + 3 ✓; seletor de modelo logo abaixo do celular; botões de compra verdes com brilho.
+- 27/09: abertura do envelope premium (aprovada, "ficou top"): canvas `festa*` no convite.html — selo estoura em brilhos + clarão, pétalas 3D com desfoque de lente, cores por modelo. Confirmação/padrinho usam `petalas(n)` (chuva).
