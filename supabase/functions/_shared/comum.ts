@@ -119,6 +119,65 @@ export async function liberarAddon(sb: SupabaseClient, pedido: { id: string; ema
   if (error) throw new Error("liberarAddon: " + error.message);
 }
 
+// ---- META: API de Conversões ----
+// A compra vai também pelo SERVIDOR (como no ViralFlow: mp-webhook → meta-capi).
+// Pega venda que o navegador perde (bloqueador, página fechada no Pix). O event_id
+// é o id do pedido — o MESMO eventID que o pixel do navegador usa — então a Meta
+// junta os dois e conta uma vez só.
+async function sha256(v: string): Promise<string> {
+  const h = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(v.trim().toLowerCase()));
+  return [...new Uint8Array(h)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+export async function enviarCompraMeta(sb: SupabaseClient, pedidoId: string): Promise<void> {
+  const token = env("META_CAPI_TOKEN"), pixel = env("META_PIXEL_ID");
+  if (!token || !pixel) return;
+  // trava: só manda uma vez por pedido
+  const { data: p } = await sb.from("pedidos").update({ meta_enviado_em: new Date().toISOString() })
+    .eq("id", pedidoId).is("meta_enviado_em", null).neq("metodo", "cortesia").gt("valor", 0)
+    .select("id, email, whatsapp, valor, itens, rastreio").maybeSingle();
+  if (!p) return;
+  try {
+    const r = (p.rastreio ?? {}) as Record<string, string>;
+    const user_data: Record<string, unknown> = { em: [await sha256(p.email)], external_id: [await sha256(p.email)] };
+    const tel = String(p.whatsapp ?? "").replace(/\D/g, "");
+    if (tel.length >= 10) user_data.ph = [await sha256(tel.startsWith("55") ? tel : "55" + tel)];
+    user_data.country = [await sha256("br")];
+    if (r.fbp) user_data.fbp = r.fbp;
+    if (r.fbc) user_data.fbc = r.fbc;
+    if (r.ip) user_data.client_ip_address = r.ip;
+    if (r.ua) user_data.client_user_agent = r.ua;
+    const itens = p.itens ?? {};
+    const contents = [
+      ...(itens.base !== false ? [{ id: "convite", quantity: 1 }] : []),
+      ...(itens.padrinhos ? [{ id: "padrinhos", quantity: 1 }] : []),
+      ...(itens.pix ? [{ id: "pix", quantity: 1 }] : []),
+    ];
+    const evento = {
+      event_name: "Purchase",
+      event_time: Math.floor(Date.now() / 1000),
+      event_id: p.id,
+      event_source_url: r.url || SITE() + "/",
+      action_source: "website",
+      user_data,
+      custom_data: {
+        value: Number(p.valor), currency: "BRL", content_type: "product",
+        content_name: itens.base === false ? (itens.padrinhos ? "padrinhos" : "pix") : "convite",
+        contents, num_items: contents.length,
+      },
+    };
+    const resp = await fetch(`https://graph.facebook.com/v21.0/${pixel}/events?access_token=${token}`, {
+      method: "POST", headers: { "Content-Type": "application/json" }, // META_TEST_CODE só existe durante teste: o evento cai em "Eventos de teste" e não conta.
+      body: JSON.stringify(env("META_TEST_CODE") ? { data: [evento], test_event_code: env("META_TEST_CODE") } : { data: [evento] }),
+    });
+    const j = await resp.json();
+    if (!resp.ok) throw new Error(JSON.stringify(j));
+    console.log("meta capi Purchase ok", p.id, j.events_received);
+  } catch (e) {
+    console.error("meta capi falhou:", e);
+    await sb.from("pedidos").update({ meta_enviado_em: null }).eq("id", pedidoId);
+  }
+}
+
 // ---- ENTREGA ----
 // Chamada quando um pedido vira "aprovado" (criar-pagamento no cartão aprovado na
 // hora, ou mp-webhook no Pix). Os dois podem chegar juntos: a trava é o
@@ -139,10 +198,12 @@ export async function entregar(sb: SupabaseClient, pedidoId: string): Promise<vo
     // Compra de um bump só: soma o recurso no convite que a pessoa já tem.
     if (pedido.itens && pedido.itens.base === false) {
       await liberarAddon(sb, pedido);
+      await enviarCompraMeta(sb, pedido.id);
       await avisarAdmin(pedido);
       return;
     }
     const uid = await ligarAConta(sb, pedido);
+    await enviarCompraMeta(sb, pedido.id);
     await enviarAcesso(sb, pedido.email, pedido.nome, !uid);
     await avisarAdmin(pedido);
   } catch (e) {

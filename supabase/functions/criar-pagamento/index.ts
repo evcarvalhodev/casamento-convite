@@ -13,7 +13,15 @@ Deno.serve(async (req) => {
   let pedidoId: string | null = null;
 
   try {
-    const { comprador = {}, itens = {}, pagamento = {}, addon: addonBruto } = await req.json();
+    const { comprador = {}, itens = {}, pagamento = {}, addon: addonBruto, rastreio: rastreioBruto = {} } = await req.json();
+    // atribuição pra API de Conversões da Meta (cookies do pixel + quem é o navegador)
+    const rastreio = {
+      fbp: String(rastreioBruto.fbp ?? "").slice(0, 200) || undefined,
+      fbc: String(rastreioBruto.fbc ?? "").slice(0, 300) || undefined,
+      url: String(rastreioBruto.url ?? "").slice(0, 500) || undefined,
+      ip: (req.headers.get("x-forwarded-for") ?? "").split(",")[0].trim() || req.headers.get("cf-connecting-ip") || undefined,
+      ua: (req.headers.get("user-agent") ?? "").slice(0, 400) || undefined,
+    };
 
     // Compra de UM bump de dentro do editor (o "soundflowOnly" do ViralFlow).
     // Exige login: o recurso é somado no convite da conta, e o e-mail é o da conta.
@@ -49,7 +57,7 @@ Deno.serve(async (req) => {
 
     // Grava o pedido ANTES de cobrar, para nada se perder.
     const { data: pedido, error: erroPedido } = await sb.from("pedidos")
-      .insert({ nome, email, whatsapp: whatsapp || null, cpf: cpf || null, itens: itensLimpos, valor, metodo, status: "pendente", user_id: userId })
+      .insert({ nome, email, whatsapp: whatsapp || null, cpf: cpf || null, itens: itensLimpos, valor, metodo, status: "pendente", user_id: userId, rastreio })
       .select("id").single();
     if (erroPedido) throw new Error("gravar pedido: " + erroPedido.message);
     pedidoId = pedido.id;

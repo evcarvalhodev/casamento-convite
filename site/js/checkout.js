@@ -336,10 +336,19 @@
     }
   }
 
+  // Cookies do pixel (_fbp = navegador, _fbc = clique no anúncio). Se o _fbc ainda
+  // não existe mas a URL tem fbclid, monta no formato da Meta.
+  function rastreio() {
+    const ck = (n) => (document.cookie.match(new RegExp("(?:^|; )" + n + "=([^;]*)")) || [])[1];
+    let fbc = ck("_fbc");
+    const fbclid = new URLSearchParams(location.search).get("fbclid");
+    if (!fbc && fbclid) fbc = `fb.1.${Date.now()}.${fbclid}`;
+    return { fbp: ck("_fbp"), fbc, url: location.href.split("#")[0] };
+  }
   async function cobrar(comprador, pagamento) {
     if (!window.chamarFuncao) throw new Error("O pagamento ainda não está configurado neste endereço (teste local).");
-    if (estado.addon) return chamarFuncao("criar-pagamento", { comprador, addon: estado.addon, pagamento }, true);
-    return chamarFuncao("criar-pagamento", { comprador, itens: { padrinhos: estado.itens.padrinhos, pix: estado.itens.pix }, pagamento });
+    if (estado.addon) return chamarFuncao("criar-pagamento", { comprador, addon: estado.addon, pagamento, rastreio: rastreio() }, true);
+    return chamarFuncao("criar-pagamento", { comprador, itens: { padrinhos: estado.itens.padrinhos, pix: estado.itens.pix }, pagamento, rastreio: rastreio() });
   }
 
   async function pagarPix() {

@@ -380,3 +380,10 @@ drop policy if exists "casal lê a própria pasta de audios" on storage.objects;
 create policy "casal lê a própria pasta de audios" on storage.objects
   for select to authenticated
   using (bucket_id = 'audios' and (storage.foldername(name))[1] = auth.uid()::text);
+
+-- ============================================================
+-- Dados de atribuição capturados no checkout, pra API de Conversões da Meta
+-- ligar a compra ao anúncio: {"fbp":"fb.1...","fbc":"fb.1...","ip":"...","ua":"...","url":"..."}
+alter table public.pedidos add column if not exists rastreio jsonb;
+-- Quando a compra foi mandada pra Meta pelo servidor (evita mandar duas vezes).
+alter table public.pedidos add column if not exists meta_enviado_em timestamptz;
