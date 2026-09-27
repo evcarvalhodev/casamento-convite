@@ -25,6 +25,7 @@ html, body { height: 100%; background: #0d0c0b; overflow: hidden; }
   background: radial-gradient(120% 70% at 50% 18%, #fbf6ee 0%, var(--bg) 55%, var(--bg2) 100%);
 }
 #luzes { position: absolute; inset: 0; width: 1080px; height: 1920px; pointer-events: none; }
+#petalas { position: absolute; inset: 0; width: 1080px; height: 1920px; pointer-events: none; z-index: 11; }
 .grao { position: absolute; inset: 0; opacity: .5; pointer-events: none; mix-blend-mode: multiply;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .42 0 0 0 0 .3 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E"); }
 /* faixa de luz que atravessa o palco nas trocas de cena */
@@ -118,7 +119,7 @@ html, body { height: 100%; background: #0d0c0b; overflow: hidden; }
 
 /* cartão final */
 .final { position: absolute; inset: 0; z-index: 20; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 0 80px 120px; opacity: 0;
-  background: radial-gradient(120% 70% at 50% 30%, #fbf6ee 0%, var(--bg) 60%, var(--bg2) 100%); }
+  background: none; }
 .final .marca { font-family: var(--display); font-size: 52px; }
 .final .marca em { color: var(--gold); }
 .final h2 { font-family: var(--display); font-weight: 400; font-size: 88px; line-height: .98; margin-top: 34px; }
@@ -180,6 +181,8 @@ html, body { height: 100%; background: #0d0c0b; overflow: hidden; }
     </div>
   </div></div></div>
 
+  <canvas id="petalas" width="1080" height="1920"></canvas>
+
   <div class="notif" id="notif"><span class="ic">A</span><div><b>Pode Abrir · agora</b><span>Tia Marta confirmou presença · 3 pessoas</span></div></div>
 
   <div class="voz" id="voz">
@@ -237,6 +240,78 @@ encaixar(); addEventListener("resize", encaixar);
     }
     requestAnimationFrame(quadro);
   })(antes);
+})();
+
+
+/* ---------- pétalas no palco inteiro (fora do celular também) ----------
+   Mesmo desenho das pétalas do convite: degradê, giro 3D, balanço, e as de
+   "perto da lente" passam grandes e desfocadas. */
+const Petalas = (() => {
+  const cv = document.getElementById("petalas"), x = cv.getContext("2d");
+  const CORES = ["#f2c6bf", "#e7a9a1", "#fbeee3", "#e6c79d", "#f5d4cd"];
+  const tom = (hex, f) => { const n = parseInt(hex.slice(1), 16), c = [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+    return "rgb(" + c.map(v => Math.round(f < 0 ? v * (1 + f) : v + (255 - v) * f)).join(",") + ")"; };
+  function forma(c, w, h) {
+    c.beginPath(); c.moveTo(0, h * .5);
+    c.bezierCurveTo(-w * .95, h * .12, -w * .62, -h * .58, -w * .08, -h * .44);
+    c.quadraticCurveTo(0, -h * .36, w * .08, -h * .44);
+    c.bezierCurveTo(w * .62, -h * .58, w * .95, h * .12, 0, h * .5); c.closePath();
+  }
+  function sprite(cor, borrada) {
+    const S = 120, s = document.createElement("canvas"); s.width = s.height = S;
+    const c = s.getContext("2d"), w = 50, h = 60; c.translate(S / 2, S / 2);
+    if (borrada) { c.shadowColor = cor; c.shadowBlur = 18; c.shadowOffsetX = 1000; c.translate(-1000, 0); forma(c, w, h); c.fill(); return s; }
+    forma(c, w, h);
+    const g = c.createLinearGradient(0, h * .5, 0, -h * .5);
+    g.addColorStop(0, tom(cor, -.16)); g.addColorStop(.55, cor); g.addColorStop(1, tom(cor, .45));
+    c.fillStyle = g; c.fill();
+    const r = c.createRadialGradient(-w * .22, -h * .12, 1, -w * .22, -h * .12, w * .7);
+    r.addColorStop(0, "rgba(255,255,255,.55)"); r.addColorStop(1, "rgba(255,255,255,0)"); c.fillStyle = r; c.fill();
+    c.strokeStyle = tom(cor, -.3); c.globalAlpha = .22; c.lineWidth = 1.2;
+    c.beginPath(); c.moveTo(0, h * .46); c.quadraticCurveTo(w * .06, 0, 0, -h * .3); c.stroke();
+    return s;
+  }
+  const spr = CORES.map(c => ({ n: sprite(c, false), b: sprite(c, true) }));
+  let ps = [], chuva = 0, sobra = 0;
+  const sorte = (a, b) => a + Math.random() * (b - a);
+  function nova(origem) {
+    const z = Math.random() < .14 ? sorte(1.5, 2.3) : sorte(.45, 1.25);
+    ps.push({
+      s: spr[Math.floor(Math.random() * spr.length)], z, vivo: origem ? -Math.random() * .12 : 0,
+      x: origem ? origem.x + sorte(-30, 30) : sorte(-40, 1120), y: origem ? origem.y + sorte(-15, 15) : sorte(-160, -40),
+      vx: origem ? sorte(-1, 1) * 900 * (.6 + z * .4) : 0, vy: origem ? -sorte(1100, 2100) * (.7 + z * .3) : sorte(90, 160),
+      rot: sorte(0, 6.28), vrot: sorte(-2.2, 2.2), giro: sorte(0, 6.28), vgiro: sorte(2, 5.5) * (Math.random() < .5 ? -1 : 1),
+      fase: sorte(0, 6.28), freq: sorte(.9, 1.8), amp: sorte(30, 70) * z, tam: .95 * z,
+    });
+    ps.sort((a, b) => a.z - b.z);
+  }
+  let antes = performance.now();
+  (function quadro(agora) {
+    const dt = Math.min((agora - antes) / 1000, .05); antes = agora;
+    sobra += chuva * dt;
+    while (sobra >= 1) { nova(null); sobra -= 1; }
+    x.setTransform(1, 0, 0, 1, 0, 0); x.clearRect(0, 0, 1080, 1920);
+    ps = ps.filter(p => {
+      p.vivo += dt; if (p.vivo < 0) return true;
+      const arr = Math.pow(.1, dt);
+      p.vx *= arr; p.vy = p.vy * arr + (1 - arr) * (130 + 110 * p.z);
+      p.x += (p.vx + Math.cos(p.vivo * p.freq + p.fase) * p.amp * p.freq) * dt; p.y += p.vy * dt;
+      p.rot += p.vrot * dt; p.giro += p.vgiro * dt;
+      if (p.y > 2020) return false;
+      const perto = p.z > 1.45, flip = Math.cos(p.giro);
+      x.globalAlpha = (perto ? .5 : .95) * Math.min(1, p.vivo * 4) * (flip < 0 ? .82 : 1);
+      x.setTransform(1, 0, 0, 1, p.x, p.y); x.rotate(p.rot);
+      x.scale(p.tam * Math.max(.12, Math.abs(flip)), p.tam);
+      x.drawImage(perto ? p.s.b : p.s.n, -60, -60);
+      return true;
+    });
+    requestAnimationFrame(quadro);
+  })(antes);
+  return {
+    explodir(o, n) { for (let i = 0; i < n; i++) nova(o); },
+    chover(porSegundo) { chuva = porSegundo; },
+    limpar() { ps = []; chuva = 0; sobra = 0; },
+  };
 })();
 
 /* ---------- trilha: música + efeitos, por tempo ---------- */
@@ -304,6 +379,7 @@ function varredura(tl, t) {
 let tl;
 function montar() {
   if (tl) tl.kill();
+  Petalas.limpar();
   gsap.set("#painel", { yPercent: 100 });
   gsap.set([".resp", "#notif", "#voz", "#final", "#toque", "#onda", ".frase", "#clarao", "#faixa"], { opacity: 0 });
   gsap.set("#camera", { scale: 1, rotation: 0, y: 0 });
@@ -325,6 +401,10 @@ function montar() {
     .fromTo("#toque", { opacity: 0, scale: 1.7 }, { opacity: 1, scale: 1, duration: .35, ease: "power2.out" }, 2.35)
     .to("#toque", { scale: .78, duration: .1 }, 2.68)
     .add(() => { const b = cd().querySelector("#abrir"); if (b) b.click(); }, 2.8)
+    .add(() => { Petalas.explodir({ x: 540, y: 1180 }, 46); }, 2.9)
+    .add(() => Petalas.chover(9), 3.2)
+    .add(() => Petalas.chover(5), 11.0)
+    .add(() => { Petalas.chover(3); Petalas.explodir({ x: 540, y: 1000 }, 24); }, 15.6)
     .to("#toque", { opacity: 0, scale: 1.4, duration: .35 }, 2.8)
     .fromTo("#onda", { opacity: .9, scale: .8 }, { opacity: 0, scale: 3.2, duration: .7, ease: "power2.out" }, 2.8)
     .fromTo("#clarao", { opacity: 0 }, { opacity: .85, duration: .12 }, 2.84)
