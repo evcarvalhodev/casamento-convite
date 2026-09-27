@@ -1,6 +1,14 @@
 # ESTADO — Convite de casamento interativo (low ticket)
 
-> Última atualização: **26/09/2026**. Comece por aqui.
+> Última atualização: **26/09/2026 (noite)**. Comece por aqui.
+
+## ⚡ Situação em 26/09 à noite
+- **No ar:** https://podeabrir.goupwin.com (CNAME `podeabrir` → Vercel na zona DNS da Hostinger de goupwin.com). O `casamento-convite-cyan.vercel.app` continua funcionando.
+- **Pagamento:** Mercado Pago da **Vitória** (app "Pode Abrir", id 4385112092323933, API de Payments). Webhook de produção configurado e PROVADO: compra real no Pix de R$1,00 foi aprovada pelo webhook e caiu no /parabens (pedido MP 181077250872).
+- ⚠️ **PREÇO DE TESTE NO AR: R$0,50 / 0,50 / 0,50** (`_shared/comum.ts` + `site/js/config.js`). Voltar pra 67 / 27 / 19,90 e redeployar `criar-pagamento`.
+- **Acesso igual ViralFlow:** pagar não cria conta; conta nasce no /parabens (e-mail da compra) ou no ADM. Painel é a tela inicial do casal. App instalável no painel.
+- **Falta:** Resend (e-mail), ID do pixel Meta, e-mail da Vitória como ADM, página de privacidade/termos, foto real de casal na demo, criativo.
+- **Segurança:** revogar o token do Supabase usado nesta sessão e trocar a senha do ADM (ficaram no chat).
 
 ## O produto
 Convite digital interativo: o convidado abre o link do WhatsApp, vê um envelope com o nome dele,
