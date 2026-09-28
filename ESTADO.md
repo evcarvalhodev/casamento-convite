@@ -67,7 +67,7 @@ O casal preenche um formulário, sobe 1-3 fotos, escolhe o modelo e recebe o lin
 
 ## 27/09/2026 — primeira campanha LIGADA (aguardando veiculação)
 - Conta act_427059763755525 (BM 101176425088497, a do ViralFlow). O conector Meta Ads do Claude está logado em OUTRO perfil (só vê "Conquista Autos"/"Alyson Gustavo") — campanha foi montada pelo navegador dele.
-- Campanha **[27/09] PODE ABRIR - VENDAS CBO**: Vendas, CBO R$25/dia (valor do rascunho dele; recomendei R$45/dia + limite de gasto R$135 — ele não confirmou a mudança), evento Comprar no pixel CONVITE_CASAMENTO 1445645484133103.
+- Campanha **[27/09] PODE ABRIR - VENDAS CBO**: Vendas, CBO **R$67/dia** (ele subiu de R$25 antes de ligar; recomendei limite de gasto da campanha R$135), evento Comprar no pixel CONVITE_CASAMENTO 1445645484133103.
 - 3 conjuntos × 3 anúncios (ele pensou 1 criativo/conjunto; recomendei 3×3 e ficou assim):
   - 01 ABERTO (mulheres 22-45, sugestão Advantage+) · 02 NOIVADO RECENTE ("Noivos recentes (6 meses)") · 03 INTERESSE CASAMENTO (Casamento, Noivado, Vestido de casamento). Em campanha Advantage+ de vendas a segmentação é só SUGESTÃO.
   - AD01 vídeo narrado (`criativos/pode-abrir-video-narrado.mp4`, comprimido do `lv_0_20260927124248.mp4` dele) · AD02 vídeo só música (`pode-abrir-video1.mp4`) · AD03 imagem C lista (`pode-abrir-img-c.png`).
